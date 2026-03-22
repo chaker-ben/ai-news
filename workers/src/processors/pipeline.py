@@ -72,9 +72,10 @@ async def process_unprocessed_articles(db: Session) -> list[Article]:
     Returns:
         List of processed articles.
     """
+    from sqlalchemy import or_
     articles = (
         db.query(Article)
-        .filter(Article.summary_fr == None)  # noqa: E711
+        .filter(or_(Article.summary_fr == None, Article.summary_fr == ""))  # noqa: E711
         .order_by(Article.collected_at.desc())
         .all()
     )
