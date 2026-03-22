@@ -1,4 +1,5 @@
 """FastAPI application — internal API for AI News workers."""
+from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager

@@ -1,4 +1,5 @@
 """Processing pipeline — orchestrates translation, summarization, and scoring."""
+from __future__ import annotations
 
 import asyncio
 import logging

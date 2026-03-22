@@ -1,4 +1,5 @@
 """Shared AI keyword lists used by collectors and processors."""
+from __future__ import annotations
 
 # Keywords for filtering AI-related content
 AI_KEYWORDS: list[str] = [
