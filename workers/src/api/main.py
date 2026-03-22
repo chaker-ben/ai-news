@@ -1,10 +1,8 @@
 """FastAPI application — internal API for AI News workers."""
-from __future__ import annotations
-
 import logging
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from typing import Annotated
+from typing import Annotated, Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI, Query
@@ -125,7 +123,7 @@ def list_articles(
     skip: Annotated[int, Query(ge=0)] = 0,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     min_score: Annotated[float, Query(ge=0, le=10)] = 0.0,
-    source_type: str | None = None,
+    source_type: Optional[str] = None,
 ):
     """List collected articles, ordered by score."""
     query = db.query(Article).filter(Article.score >= min_score)
