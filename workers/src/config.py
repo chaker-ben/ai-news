@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     collection_interval_hours: int = 1
     max_article_age_hours: int = 24
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {"env_file": ".env", "env_file_encoding": "utf-8", "extra": "ignore"}
 
 
 settings = Settings()
