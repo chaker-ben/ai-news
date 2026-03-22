@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum SourceType {
+  blog
+  twitter
+  youtube
+  tiktok
+  reddit
+  linkedin
+  arxiv
+}
+
+model Source {
+  id            String     @id @default(cuid())
+  name          String
+  type          SourceType
+  url           String
+  active        Boolean    @default(true)
+  lastCollected DateTime?  @map("last_collected")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  articles      Article[]
+
+  @@map("sources")
+}
+
+model Article {
+  id              String     @id @default(cuid())
+  sourceId        String     @map("source_id")
+  source          Source     @relation(fields: [sourceId], references: [id])
+  sourceType      SourceType @map("source_type")
+  originalTitle   String     @map("original_title")
+  titleFr         String?    @map("title_fr")
+  originalContent String?    @map("original_content") @db.Text
+  summaryFr       String?    @map("summary_fr") @db.Text
+  url             String
+  publishedAt     DateTime   @map("published_at")
+  collectedAt     DateTime   @default(now()) @map("collected_at")
+  score           Float      @default(0)
+  notified        Boolean    @default(false)
+  contentHash     String     @unique @map("content_hash")
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  @@index([score])
+  @@index([publishedAt])
+  @@index([notified])
+  @@index([sourceType])
+  @@map("articles")
+}
+
+model NotificationLog {
+  id        String   @id @default(cuid())
+  type      String   // "digest", "breaking", "weekly"
+  recipient String
+  content   String   @db.Text
+  sentAt    DateTime @default(now()) @map("sent_at")
+  success   Boolean  @default(true)
+  error     String?
+
+  @@index([sentAt])
+  @@map("notification_logs")
+}

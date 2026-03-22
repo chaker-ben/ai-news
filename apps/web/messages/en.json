@@ -1,0 +1,107 @@
+{
+  "common": {
+    "appName": "AI News",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "noResults": "No results",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "articles": "Articles",
+    "sources": "Sources",
+    "settings": "Settings",
+    "notifications": "Notifications",
+    "stats": "Statistics"
+  },
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out",
+    "email": "Email address",
+    "password": "Password"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "todayDigest": "Today's digest",
+    "articlesCollected": "Articles collected",
+    "notificationsSent": "Notifications sent",
+    "activeSources": "Active sources",
+    "topArticles": "Top articles",
+    "recentActivity": "Recent activity",
+    "noArticles": "No articles collected today",
+    "noArticlesCta": "Run a manual collection"
+  },
+  "articles": {
+    "title": "Articles",
+    "score": "Score",
+    "source": "Source",
+    "publishedAt": "Published",
+    "collectedAt": "Collected",
+    "summary": "Summary",
+    "originalTitle": "Original title",
+    "viewOriginal": "View original",
+    "notified": "Notified",
+    "pending": "Pending",
+    "filterBySource": "Filter by source",
+    "filterByScore": "Minimum score",
+    "sortBy": "Sort by",
+    "sortNewest": "Newest first",
+    "sortScore": "Highest score",
+    "empty": "No articles found",
+    "emptyCta": "Check your filters or run a collection"
+  },
+  "sources": {
+    "title": "Sources",
+    "add": "Add source",
+    "name": "Name",
+    "type": "Type",
+    "url": "URL",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "lastCollected": "Last collected",
+    "articlesCount": "Articles collected",
+    "empty": "No sources configured",
+    "emptyCta": "Add your first source"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "whatsappConfig": "WhatsApp configuration",
+    "digestTime": "Digest time",
+    "minScoreAlert": "Minimum score for alert",
+    "maxArticles": "Max articles",
+    "sendTestDigest": "Send test digest",
+    "lastSent": "Last sent"
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "themeDark": "Dark",
+    "themeLight": "Light",
+    "themeSystem": "System",
+    "language": "Language",
+    "apiKeys": "API Keys",
+    "dangerZone": "Danger zone"
+  },
+  "errors": {
+    "generic": "An unexpected error occurred",
+    "notFound": "Page not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access forbidden",
+    "validation": "Validation error",
+    "network": "Network error — check your connection"
+  }
+}

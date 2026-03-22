@@ -1,0 +1,30 @@
+{
+  "name": "ai-news",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI News — Automated AI news aggregation with WhatsApp notifications",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@ai-news/web",
+    "dev:mobile": "turbo dev --filter=@ai-news/mobile",
+    "dev:workers": "cd workers && python -m uvicorn src.api.main:app --reload",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "test": "turbo test",
+    "test:coverage": "turbo test:coverage",
+    "test:e2e": "turbo test:e2e",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,css,md}\"",
+    "db:generate": "turbo db:generate --filter=@ai-news/db",
+    "db:push": "turbo db:push --filter=@ai-news/db",
+    "db:migrate": "turbo db:migrate --filter=@ai-news/db",
+    "db:seed": "turbo db:seed --filter=@ai-news/db",
+    "workers:install": "cd workers && pip install -r requirements.txt",
+    "workers:test": "cd workers && python -m pytest tests/ -v",
+    "clean": "turbo clean"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

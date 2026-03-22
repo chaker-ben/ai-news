@@ -1,0 +1,107 @@
+{
+  "common": {
+    "appName": "AI News",
+    "loading": "Chargement...",
+    "error": "Une erreur est survenue",
+    "retry": "Réessayer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "search": "Rechercher",
+    "noResults": "Aucun résultat",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "confirm": "Confirmer",
+    "close": "Fermer"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "articles": "Articles",
+    "sources": "Sources",
+    "settings": "Paramètres",
+    "notifications": "Notifications",
+    "stats": "Statistiques"
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "signUp": "S'inscrire",
+    "signOut": "Se déconnecter",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "todayDigest": "Digest du jour",
+    "articlesCollected": "Articles collectés",
+    "notificationsSent": "Notifications envoyées",
+    "activeSources": "Sources actives",
+    "topArticles": "Top articles",
+    "recentActivity": "Activité récente",
+    "noArticles": "Aucun article collecté aujourd'hui",
+    "noArticlesCta": "Lancer une collecte manuelle"
+  },
+  "articles": {
+    "title": "Articles",
+    "score": "Score",
+    "source": "Source",
+    "publishedAt": "Publié le",
+    "collectedAt": "Collecté le",
+    "summary": "Résumé",
+    "originalTitle": "Titre original",
+    "viewOriginal": "Voir l'original",
+    "notified": "Notifié",
+    "pending": "En attente",
+    "filterBySource": "Filtrer par source",
+    "filterByScore": "Score minimum",
+    "sortBy": "Trier par",
+    "sortNewest": "Plus récent",
+    "sortScore": "Meilleur score",
+    "empty": "Aucun article trouvé",
+    "emptyCta": "Vérifiez vos filtres ou lancez une collecte"
+  },
+  "sources": {
+    "title": "Sources",
+    "add": "Ajouter une source",
+    "name": "Nom",
+    "type": "Type",
+    "url": "URL",
+    "status": "Statut",
+    "active": "Active",
+    "inactive": "Inactive",
+    "lastCollected": "Dernière collecte",
+    "articlesCount": "Articles collectés",
+    "empty": "Aucune source configurée",
+    "emptyCta": "Ajoutez votre première source"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "whatsappConfig": "Configuration WhatsApp",
+    "digestTime": "Heure du digest",
+    "minScoreAlert": "Score minimum pour alerte",
+    "maxArticles": "Nombre max d'articles",
+    "sendTestDigest": "Envoyer un digest test",
+    "lastSent": "Dernier envoi"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "general": "Général",
+    "appearance": "Apparence",
+    "theme": "Thème",
+    "themeDark": "Sombre",
+    "themeLight": "Clair",
+    "themeSystem": "Système",
+    "language": "Langue",
+    "apiKeys": "Clés API",
+    "dangerZone": "Zone dangereuse"
+  },
+  "errors": {
+    "generic": "Une erreur inattendue est survenue",
+    "notFound": "Page introuvable",
+    "unauthorized": "Accès non autorisé",
+    "forbidden": "Accès interdit",
+    "validation": "Erreur de validation",
+    "network": "Erreur réseau — vérifiez votre connexion"
+  }
+}
