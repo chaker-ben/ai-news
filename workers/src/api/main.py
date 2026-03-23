@@ -141,6 +141,10 @@ def list_articles(
                 "title": a.title_fr or a.original_title,
                 "original_title": a.original_title,
                 "summary": a.summary_fr,
+                "title_en": a.title_en,
+                "summary_en": a.summary_en,
+                "title_ar": a.title_ar,
+                "summary_ar": a.summary_ar,
                 "url": a.url,
                 "source_type": a.source_type,
                 "score": a.score,
@@ -166,8 +170,12 @@ def get_article(article_id: str, db: DbSession):
         "id": article.id,
         "original_title": article.original_title,
         "title_fr": article.title_fr,
+        "title_en": article.title_en,
+        "title_ar": article.title_ar,
         "original_content": article.original_content,
         "summary_fr": article.summary_fr,
+        "summary_en": article.summary_en,
+        "summary_ar": article.summary_ar,
         "url": article.url,
         "source_type": article.source_type,
         "score": article.score,
@@ -215,6 +223,32 @@ async def trigger_processing(db: DbSession):
     """Trigger manual processing of unprocessed articles."""
     processed = await process_unprocessed_articles(db)
     return {"status": "ok", "processed": len(processed)}
+
+
+@app.post("/process/reprocess-all")
+async def reprocess_all_articles(db: DbSession):
+    """Reprocess articles missing EN/AR translations."""
+    from sqlalchemy import or_
+    articles = (
+        db.query(Article)
+        .filter(
+            Article.summary_fr != None,  # noqa: E711
+            Article.summary_fr != "",
+            or_(Article.summary_en == None, Article.summary_ar == None),  # noqa: E711
+        )
+        .all()
+    )
+    if not articles:
+        return {"status": "ok", "reprocessed": 0, "message": "All articles already have 3 languages"}
+
+    # Reset summaries to trigger reprocessing
+    for article in articles:
+        article.summary_fr = ""
+        article.title_fr = None
+    db.commit()
+
+    processed = await process_unprocessed_articles(db)
+    return {"status": "ok", "reprocessed": len(processed)}
 
 
 @app.post("/notify/digest")

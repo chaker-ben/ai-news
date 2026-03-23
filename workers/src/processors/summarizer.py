@@ -1,4 +1,4 @@
-"""Article processing using Claude API — translate + summarize + score in one call."""
+"""Article processing using Claude API — trilingual translate + summarize + score in one call."""
 from __future__ import annotations
 
 import json
@@ -26,10 +26,15 @@ PEU PERTINENT pour ce profil (scorer bas) :
 - Contenu marketing/promotionnel sans substance technique
 - Opinion pieces sans données ni insights concrets
 
-Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas de texte autour) :
+Réponds UNIQUEMENT avec un JSON valide (pas de markdown, pas de texte autour).
+Produis le titre et résumé en 3 langues (français, anglais, arabe) :
 {
-  "title_fr": "Titre traduit en français (concis, informatif)",
-  "summary_fr": "Résumé en français, 3 à 5 phrases. Factuel, professionnel. Mettre en avant l'impact pour les développeurs et les implications techniques/business.",
+  "title_fr": "Titre en français",
+  "summary_fr": "Résumé français, 2-3 phrases. Factuel, impact dev/business.",
+  "title_en": "English title",
+  "summary_en": "English summary, 2-3 sentences. Factual, dev/business impact.",
+  "title_ar": "العنوان بالعربية",
+  "summary_ar": "ملخص بالعربية، ٢-٣ جمل. واقعي، تأثير تقني/تجاري.",
   "score": 7.5
 }
 
@@ -40,7 +45,7 @@ Critères de scoring (1.0 à 10.0) :
 - 3-4 : Mineur (news incrémentale, opinion, mise à jour mineure)
 - 1-2 : Hors profil (divertissement, polémique sans impact tech, contenu recyclé)"""
 
-PROCESS_PROMPT_TEMPLATE = """Analyse cet article et retourne le JSON (titre FR + résumé FR + score) :
+PROCESS_PROMPT_TEMPLATE = """Analyse cet article et retourne le JSON trilingue (FR + EN + AR + score) :
 
 Titre original : {title}
 Source : {source}
@@ -50,13 +55,28 @@ Contenu :
 
 
 class ArticleProcessingResult:
-    """Result of processing an article with Claude."""
+    """Result of processing an article with Claude — trilingual."""
 
-    __slots__ = ("title_fr", "summary_fr", "score")
+    __slots__ = (
+        "title_fr", "summary_fr",
+        "title_en", "summary_en",
+        "title_ar", "summary_ar",
+        "score",
+    )
 
-    def __init__(self, title_fr: str, summary_fr: str, score: float):
+    def __init__(
+        self,
+        title_fr: str, summary_fr: str,
+        title_en: str, summary_en: str,
+        title_ar: str, summary_ar: str,
+        score: float,
+    ):
         self.title_fr = title_fr
         self.summary_fr = summary_fr
+        self.title_en = title_en
+        self.summary_en = summary_en
+        self.title_ar = title_ar
+        self.summary_ar = summary_ar
         self.score = score
 
 
@@ -65,16 +85,10 @@ async def process_article_with_claude(
     content: str,
     source_name: str,
 ) -> ArticleProcessingResult | None:
-    """Process an article with Claude: translate title + summarize + score in ONE call.
-
-    Args:
-        title: Original article title.
-        content: Article content or description.
-        source_name: Name of the source.
+    """Process an article with Claude: trilingual translate + summarize + score in ONE call.
 
     Returns:
-        ArticleProcessingResult with title_fr, summary_fr, score.
-        None if API key not configured or on failure.
+        ArticleProcessingResult with all 3 languages + score, or None on failure.
     """
     if not settings.anthropic_api_key:
         logger.warning("Anthropic API key not configured. Skipping processing.")
@@ -88,7 +102,7 @@ async def process_article_with_claude(
 
         message = await client.messages.create(
             model="claude-sonnet-4-20250514",
-            max_tokens=600,
+            max_tokens=900,
             system=PROCESS_SYSTEM_PROMPT,
             messages=[
                 {
@@ -103,26 +117,27 @@ async def process_article_with_claude(
         )
 
         raw = message.content[0].text.strip()
-
-        # Parse JSON response
         result = json.loads(raw)
-        title_fr = result.get("title_fr", title)
-        summary_fr = result.get("summary_fr", "")
+
         score = float(result.get("score", 5.0))
         score = max(1.0, min(10.0, score))
 
-        logger.info(
-            "Processed: %s → score=%.1f (%d chars summary)",
-            title[:50],
-            score,
-            len(summary_fr),
-        )
-
-        return ArticleProcessingResult(
-            title_fr=title_fr,
-            summary_fr=summary_fr,
+        processed = ArticleProcessingResult(
+            title_fr=result.get("title_fr", title),
+            summary_fr=result.get("summary_fr", ""),
+            title_en=result.get("title_en", title),
+            summary_en=result.get("summary_en", ""),
+            title_ar=result.get("title_ar", ""),
+            summary_ar=result.get("summary_ar", ""),
             score=score,
         )
+
+        logger.info(
+            "Processed (3 langs): %s → score=%.1f",
+            title[:50],
+            score,
+        )
+        return processed
 
     except json.JSONDecodeError:
         logger.warning("Could not parse JSON from Claude for: %s", title[:50])
@@ -133,17 +148,3 @@ async def process_article_with_claude(
     except Exception:
         logger.exception("Processing failed for: %s", title[:50])
         return None
-
-
-# ── Legacy functions kept for backward compatibility ──
-
-async def summarize_article(title: str, content: str) -> str:
-    """Legacy: summarize only. Prefer process_article_with_claude."""
-    result = await process_article_with_claude(title, content, "Unknown")
-    return result.summary_fr if result else ""
-
-
-async def score_article(title: str, content: str, source_name: str) -> float:
-    """Legacy: score only. Prefer process_article_with_claude."""
-    result = await process_article_with_claude(title, content, source_name)
-    return result.score if result else 5.0

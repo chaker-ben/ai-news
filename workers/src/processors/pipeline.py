@@ -40,6 +40,10 @@ async def process_article(article: Article, db: Session) -> Article:
     if result:
         article.title_fr = result.title_fr
         article.summary_fr = result.summary_fr
+        article.title_en = result.title_en
+        article.summary_en = result.summary_en
+        article.title_ar = result.title_ar
+        article.summary_ar = result.summary_ar
         llm_score = result.score
 
     # Final score: combine LLM score with source weight + freshness boost
