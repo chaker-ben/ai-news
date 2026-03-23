@@ -8,6 +8,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { getStats, getArticles } from "@/lib/api";
+import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
 
 function StatCard({
   label,
@@ -89,8 +90,14 @@ function SourceTypeBadge({ type }: { type: string }) {
   );
 }
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations("dashboard");
+  const intlLocale = getIntlLocale(locale);
 
   let stats = null;
   let topArticles = null;
@@ -175,7 +182,9 @@ export default async function DashboardPage() {
 
         {topArticles && topArticles.length > 0 ? (
           <div className="divide-y" style={{ borderColor: "var(--border-subtle)" }}>
-            {topArticles.map((article) => (
+            {topArticles.map((article) => {
+              const localized = getLocalizedArticle(article, locale);
+              return (
               <div
                 key={article.id}
                 className="flex items-start gap-4 px-6 py-4 transition-colors"
@@ -190,22 +199,22 @@ export default async function DashboardPage() {
                     className="mt-2 text-sm font-medium leading-snug"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    {article.title}
+                    {localized.title}
                   </h3>
-                  {article.summary && (
+                  {localized.summary && (
                     <p
                       className="mt-1 line-clamp-2 text-xs"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      {article.summary}
+                      {localized.summary}
                     </p>
                   )}
                   <p
-                    className="mt-2 text-xs"
+                    className="mt-2 text-xs ltr-nums"
                     style={{ color: "var(--text-muted)" }}
                   >
                     {article.published_at
-                      ? new Date(article.published_at).toLocaleDateString("fr-FR", {
+                      ? new Date(article.published_at).toLocaleDateString(intlLocale, {
                           day: "numeric",
                           month: "short",
                           hour: "2-digit",
@@ -224,7 +233,8 @@ export default async function DashboardPage() {
                   <ArrowUpRight size={16} />
                 </a>
               </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="px-6 py-12 text-center">

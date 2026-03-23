@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
+import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
 import {
   ArrowUpRight,
   ChevronLeft,
@@ -100,9 +101,11 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
-  const titleFr = article.title_fr || article.original_title;
+  const { locale } = await params;
+  const intlLocale = getIntlLocale(locale);
+  const localized = getLocalizedArticle(article, locale);
   const publishedDate = article.published_at
-    ? new Date(article.published_at).toLocaleDateString("fr-FR", {
+    ? new Date(article.published_at).toLocaleDateString(intlLocale, {
         weekday: "long",
         day: "numeric",
         month: "long",
@@ -112,7 +115,7 @@ export default async function ArticleDetailPage({
       })
     : "—";
   const collectedDate = article.collected_at
-    ? new Date(article.collected_at).toLocaleDateString("fr-FR", {
+    ? new Date(article.collected_at).toLocaleDateString(intlLocale, {
         day: "numeric",
         month: "short",
         hour: "2-digit",
@@ -162,16 +165,16 @@ export default async function ArticleDetailPage({
           )}
         </div>
 
-        {/* Title FR */}
+        {/* Title */}
         <h1
           className="mt-4 text-xl font-bold leading-snug lg:text-2xl"
           style={{ color: "var(--text-primary)" }}
         >
-          {titleFr}
+          {localized.title}
         </h1>
 
         {/* Original title */}
-        {article.title_fr && article.title_fr !== article.original_title && (
+        {localized.title !== article.original_title && (
           <p
             className="mt-2 text-sm italic"
             style={{ color: "var(--text-muted)" }}
@@ -217,7 +220,7 @@ export default async function ArticleDetailPage({
       </div>
 
       {/* Summary */}
-      {article.summary_fr && (
+      {localized.summary && (
         <div
           className="rounded-xl p-6"
           style={{
@@ -235,7 +238,7 @@ export default async function ArticleDetailPage({
             className="text-sm leading-relaxed"
             style={{ color: "var(--text-secondary)" }}
           >
-            {article.summary_fr}
+            {localized.summary}
           </p>
         </div>
       )}

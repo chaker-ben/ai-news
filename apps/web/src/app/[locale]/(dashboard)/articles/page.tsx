@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ArrowUpRight, FileText, CheckCircle2, Clock } from "lucide-react";
 import { getArticles } from "@/lib/api";
+import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
 import { Link } from "@/i18n/routing";
 
 function ScoreBadge({ score }: { score: number }) {
@@ -49,7 +50,13 @@ function SourceTypeBadge({ type }: { type: string }) {
   );
 }
 
-export default async function ArticlesPage() {
+export default async function ArticlesPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const intlLocale = getIntlLocale(locale);
   const t = await getTranslations("articles");
 
   let articles = null;
@@ -83,7 +90,9 @@ export default async function ArticlesPage() {
       {/* Articles list */}
       {articles && articles.length > 0 ? (
         <div className="space-y-3">
-          {articles.map((article) => (
+          {articles.map((article) => {
+            const localized = getLocalizedArticle(article, locale);
+            return (
             <Link
               key={article.id}
               href={`/articles/${article.id}`}
@@ -117,24 +126,24 @@ export default async function ArticlesPage() {
                     className="mt-2 text-sm font-semibold leading-snug"
                     style={{ color: "var(--text-primary)" }}
                   >
-                    {article.title}
+                    {localized.title}
                   </h3>
 
                   {/* Summary */}
-                  {article.summary && (
+                  {localized.summary && (
                     <p
                       className="mt-2 line-clamp-2 text-sm leading-relaxed"
                       style={{ color: "var(--text-secondary)" }}
                     >
-                      {article.summary}
+                      {localized.summary}
                     </p>
                   )}
 
                   {/* Meta */}
-                  <div className="mt-3 flex items-center gap-4 text-xs" style={{ color: "var(--text-muted)" }}>
+                  <div className="mt-3 flex items-center gap-4 text-xs ltr-nums" style={{ color: "var(--text-muted)" }}>
                     {article.published_at && (
                       <time>
-                        {new Date(article.published_at).toLocaleDateString("fr-FR", {
+                        {new Date(article.published_at).toLocaleDateString(intlLocale, {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
@@ -155,7 +164,8 @@ export default async function ArticlesPage() {
                 </div>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div

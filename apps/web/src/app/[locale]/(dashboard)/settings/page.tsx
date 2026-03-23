@@ -11,10 +11,10 @@ export default function SettingsPage() {
   const router = useRouter();
   const pathname = usePathname();
 
-  const currentLocale = pathname.startsWith("/en") ? "en" : "fr";
+  const currentLocale = pathname.startsWith("/ar") ? "ar" : pathname.startsWith("/en") ? "en" : "fr";
 
   const switchLocale = (newLocale: string) => {
-    const newPath = pathname.replace(/^\/(fr|en)/, `/${newLocale}`);
+    const newPath = pathname.replace(/^\/(fr|en|ar)/, `/${newLocale}`);
     router.push(newPath);
   };
 
@@ -25,8 +25,9 @@ export default function SettingsPage() {
   ] as const;
 
   const languageOptions = [
-    { value: "fr", label: "Francais" },
+    { value: "fr", label: "Français" },
     { value: "en", label: "English" },
+    { value: "ar", label: "العربية" },
   ] as const;
 
   return (
