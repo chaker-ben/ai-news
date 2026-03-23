@@ -17,6 +17,21 @@ export const articleSchema = z.object({
   notified: z.boolean(),
 });
 
+export const articleDetailSchema = z.object({
+  id: z.string(),
+  original_title: z.string(),
+  title_fr: z.string().nullable(),
+  original_content: z.string().nullable(),
+  summary_fr: z.string().nullable(),
+  url: z.string(),
+  source_type: z.string(),
+  score: z.number(),
+  published_at: z.string().nullable(),
+  collected_at: z.string().nullable(),
+  notified: z.boolean(),
+  content_hash: z.string(),
+});
+
 export const articlesResponseSchema = z.object({
   articles: z.array(articleSchema),
   total: z.number(),
@@ -89,6 +104,12 @@ export async function getArticles(params?: {
 
   const query = searchParams.toString();
   return fetchApi(`/articles${query ? `?${query}` : ""}`, articlesResponseSchema);
+}
+
+export async function getArticle(id: string): Promise<z.infer<typeof articleDetailSchema>> {
+  return fetchApi(`/articles/${id}`, articleDetailSchema, {
+    next: { revalidate: 0 },
+  });
 }
 
 export async function getSources(): Promise<z.infer<typeof sourcesResponseSchema>> {

@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { ArrowUpRight, FileText, CheckCircle2, Clock } from "lucide-react";
 import { getArticles } from "@/lib/api";
+import { Link } from "@/i18n/routing";
 
 function ScoreBadge({ score }: { score: number }) {
   let color = "var(--color-neutral-500)";
@@ -83,9 +84,10 @@ export default async function ArticlesPage() {
       {articles && articles.length > 0 ? (
         <div className="space-y-3">
           {articles.map((article) => (
-            <div
+            <Link
               key={article.id}
-              className="group rounded-xl p-5 transition-all duration-200"
+              href={`/articles/${article.id}`}
+              className="group block rounded-xl p-5 transition-all duration-200"
               style={{
                 background: "var(--bg-surface)",
                 border: "1px solid var(--border-subtle)",
@@ -144,18 +146,15 @@ export default async function ArticlesPage() {
                   </div>
                 </div>
 
-                {/* Link */}
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                {/* Arrow */}
+                <div
                   className="shrink-0 rounded-lg p-2 opacity-0 transition-all group-hover:opacity-100"
                   style={{ color: "var(--color-primary-400)" }}
                 >
                   <ArrowUpRight size={18} />
-                </a>
+                </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       ) : (
