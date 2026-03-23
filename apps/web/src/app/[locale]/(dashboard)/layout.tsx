@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
@@ -10,7 +10,6 @@ import {
   Bell,
   BarChart3,
   Menu,
-  X,
   Zap,
 } from "lucide-react";
 import { useState } from "react";
@@ -31,6 +30,8 @@ export default function DashboardLayout({
 }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const locale = useLocale();
+  const isRTL = locale === "ar";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -52,22 +53,32 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <aside
         className={`
-          fixed inset-y-0 start-0 z-50 flex w-64 flex-col
+          fixed inset-y-0 z-50 flex w-64 flex-col
           transition-transform duration-200
-          lg:static lg:translate-x-0
-          ${sidebarOpen ? "translate-x-0" : "ltr:-translate-x-full rtl:translate-x-full"}
+          lg:static lg:translate-x-0!
+          ${sidebarOpen ? "translate-x-0" : (isRTL ? "translate-x-full" : "-translate-x-full")}
         `}
-        style={{ background: "var(--bg-secondary)", borderInlineEnd: "1px solid var(--border-subtle)" }}
+        style={{
+          background: "var(--bg-secondary)",
+          borderInlineEnd: "1px solid var(--border-subtle)",
+          ...(isRTL ? { right: 0 } : { left: 0 }),
+        }}
       >
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 px-6" style={{ borderBlockEnd: "1px solid var(--border-subtle)" }}>
+        <div
+          className="flex h-16 items-center gap-3 px-6"
+          style={{ borderBlockEnd: "1px solid var(--border-subtle)" }}
+        >
           <div
             className="flex h-9 w-9 items-center justify-center rounded-lg"
             style={{ background: "var(--color-primary-600)" }}
           >
             <Zap size={20} className="text-white" />
           </div>
-          <span className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+          <span
+            className="text-lg font-bold"
+            style={{ color: "var(--text-primary)" }}
+          >
             AI News
           </span>
         </div>
@@ -80,12 +91,11 @@ export default function DashboardLayout({
               <Link
                 key={key}
                 href={href}
-                className={`
-                  flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium
-                  transition-colors duration-150
-                `}
+                className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors duration-150"
                 style={{
-                  color: active ? "var(--color-primary-400)" : "var(--text-secondary)",
+                  color: active
+                    ? "var(--color-primary-400)"
+                    : "var(--text-secondary)",
                   background: active ? "var(--bg-hover)" : "transparent",
                 }}
                 onClick={() => setSidebarOpen(false)}
@@ -98,8 +108,14 @@ export default function DashboardLayout({
         </nav>
 
         {/* Footer */}
-        <div className="px-6 py-4" style={{ borderBlockStart: "1px solid var(--border-subtle)" }}>
-          <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
+        <div
+          className="px-6 py-4"
+          style={{ borderBlockStart: "1px solid var(--border-subtle)" }}
+        >
+          <div
+            className="flex items-center gap-2 text-xs"
+            style={{ color: "var(--text-muted)" }}
+          >
             <BarChart3 size={14} />
             <span>AI News v0.1.0</span>
           </div>
@@ -111,7 +127,10 @@ export default function DashboardLayout({
         {/* Top bar (mobile) */}
         <header
           className="flex h-16 items-center gap-4 px-4 lg:hidden"
-          style={{ background: "var(--bg-secondary)", borderBlockEnd: "1px solid var(--border-subtle)" }}
+          style={{
+            background: "var(--bg-secondary)",
+            borderBlockEnd: "1px solid var(--border-subtle)",
+          }}
         >
           <button
             onClick={() => setSidebarOpen(true)}
@@ -120,15 +139,16 @@ export default function DashboardLayout({
           >
             <Menu size={24} />
           </button>
-          <span className="text-lg font-bold" style={{ color: "var(--text-primary)" }}>
+          <span
+            className="text-lg font-bold"
+            style={{ color: "var(--text-primary)" }}
+          >
             AI News
           </span>
         </header>
 
         {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-4 lg:p-8">{children}</main>
       </div>
     </div>
   );

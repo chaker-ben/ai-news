@@ -1,7 +1,7 @@
 import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
 
-const withNextIntl = createNextIntlPlugin();
+const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@ai-news/ui", "@ai-news/types", "@ai-news/utils"],
