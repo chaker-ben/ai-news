@@ -1,0 +1,107 @@
+{
+  "common": {
+    "appName": "أخبار الذكاء الاصطناعي",
+    "loading": "جاري التحميل...",
+    "error": "حدث خطأ",
+    "retry": "إعادة المحاولة",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "search": "بحث",
+    "noResults": "لا توجد نتائج",
+    "back": "رجوع",
+    "next": "التالي",
+    "previous": "السابق",
+    "confirm": "تأكيد",
+    "close": "إغلاق"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "articles": "المقالات",
+    "sources": "المصادر",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "stats": "الإحصائيات"
+  },
+  "auth": {
+    "signIn": "تسجيل الدخول",
+    "signUp": "إنشاء حساب",
+    "signOut": "تسجيل الخروج",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "todayDigest": "ملخص اليوم",
+    "articlesCollected": "المقالات المجمّعة",
+    "notificationsSent": "الإشعارات المُرسلة",
+    "activeSources": "المصادر النشطة",
+    "topArticles": "أهم المقالات",
+    "recentActivity": "النشاط الأخير",
+    "noArticles": "لم يتم جمع أي مقالات اليوم",
+    "noArticlesCta": "تشغيل جمع يدوي"
+  },
+  "articles": {
+    "title": "المقالات",
+    "score": "التقييم",
+    "source": "المصدر",
+    "publishedAt": "تاريخ النشر",
+    "collectedAt": "تاريخ الجمع",
+    "summary": "الملخص",
+    "originalTitle": "العنوان الأصلي",
+    "viewOriginal": "عرض المقال الأصلي",
+    "notified": "تم الإرسال",
+    "pending": "قيد الانتظار",
+    "filterBySource": "تصفية حسب المصدر",
+    "filterByScore": "الحد الأدنى للتقييم",
+    "sortBy": "ترتيب حسب",
+    "sortNewest": "الأحدث أولاً",
+    "sortScore": "الأعلى تقييماً",
+    "empty": "لم يتم العثور على مقالات",
+    "emptyCta": "تحقق من الفلاتر أو قم بتشغيل عملية جمع"
+  },
+  "sources": {
+    "title": "المصادر",
+    "add": "إضافة مصدر",
+    "name": "الاسم",
+    "type": "النوع",
+    "url": "الرابط",
+    "status": "الحالة",
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "lastCollected": "آخر جمع",
+    "articlesCount": "المقالات المجمّعة",
+    "empty": "لا توجد مصادر مُعدَّة",
+    "emptyCta": "أضف مصدرك الأول"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "whatsappConfig": "إعدادات واتساب",
+    "digestTime": "وقت الملخص",
+    "minScoreAlert": "الحد الأدنى للتنبيه",
+    "maxArticles": "الحد الأقصى للمقالات",
+    "sendTestDigest": "إرسال ملخص تجريبي",
+    "lastSent": "آخر إرسال"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "general": "عام",
+    "appearance": "المظهر",
+    "theme": "السمة",
+    "themeDark": "داكن",
+    "themeLight": "فاتح",
+    "themeSystem": "النظام",
+    "language": "اللغة",
+    "apiKeys": "مفاتيح API",
+    "dangerZone": "منطقة الخطر"
+  },
+  "errors": {
+    "generic": "حدث خطأ غير متوقع",
+    "notFound": "الصفحة غير موجودة",
+    "unauthorized": "وصول غير مُصرّح",
+    "forbidden": "الوصول محظور",
+    "validation": "خطأ في التحقق",
+    "network": "خطأ في الشبكة — تحقق من اتصالك"
+  }
+}

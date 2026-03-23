@@ -34,7 +34,7 @@ export default function DashboardLayout({
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isActive = (href: string) => {
-    const cleanPath = pathname.replace(/^\/(fr|en)/, "");
+    const cleanPath = pathname.replace(/^\/(fr|en|ar)/, "");
     if (href === "/") return cleanPath === "/" || cleanPath === "";
     return cleanPath.startsWith(href);
   };
@@ -55,7 +55,7 @@ export default function DashboardLayout({
           fixed inset-y-0 start-0 z-50 flex w-64 flex-col
           transition-transform duration-200
           lg:static lg:translate-x-0
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          ${sidebarOpen ? "translate-x-0" : "ltr:-translate-x-full rtl:translate-x-full"}
         `}
         style={{ background: "var(--bg-secondary)", borderInlineEnd: "1px solid var(--border-subtle)" }}
       >
