@@ -107,6 +107,17 @@ async def fetch_subreddit_posts(
                 if ups < MIN_UPVOTES:
                     continue
 
+                # Reddit provides thumbnail URLs for link posts
+                thumbnail = post.get("thumbnail", "")
+                thumbnail_url = thumbnail if thumbnail.startswith("http") else None
+
+                # Check for preview images (higher resolution)
+                preview = post.get("preview", {})
+                preview_images = preview.get("images", [])
+                if preview_images and not thumbnail_url:
+                    source_img = preview_images[0].get("source", {})
+                    thumbnail_url = source_img.get("url", "").replace("&amp;", "&") or None
+
                 posts.append({
                     "id": post.get("id", ""),
                     "title": post.get("title", ""),
@@ -118,6 +129,7 @@ async def fetch_subreddit_posts(
                     "ups": ups,
                     "created_utc": post.get("created_utc", 0),
                     "num_comments": post.get("num_comments", 0),
+                    "thumbnail_url": thumbnail_url,
                 })
 
             return posts
@@ -184,6 +196,7 @@ async def collect_reddit(db: Session) -> list[Article]:
                 original_title=f"[r/{subreddit}] {title}",
                 original_content=f"{content}\n\n({ups} upvotes, {post.get('num_comments', 0)} comments)",
                 url=post_url,
+                thumbnail_url=post.get("thumbnail_url"),
                 published_at=published_at,
                 content_hash=content_hash,
             )

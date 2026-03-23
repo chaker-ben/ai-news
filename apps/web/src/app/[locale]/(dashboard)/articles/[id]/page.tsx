@@ -219,6 +219,39 @@ export default async function ArticleDetailPage({
         </a>
       </div>
 
+      {/* Video embed (YouTube) */}
+      {article.video_url && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{ border: "1px solid var(--border-subtle)" }}
+        >
+          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+            <iframe
+              src={article.video_url}
+              title={localized.title}
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Thumbnail (if no video) */}
+      {!article.video_url && article.thumbnail_url && (
+        <div
+          className="overflow-hidden rounded-xl"
+          style={{ border: "1px solid var(--border-subtle)" }}
+        >
+          <img
+            src={article.thumbnail_url}
+            alt={localized.title}
+            className="w-full max-h-80 object-cover"
+            loading="lazy"
+          />
+        </div>
+      )}
+
       {/* Summary */}
       {localized.summary && (
         <div

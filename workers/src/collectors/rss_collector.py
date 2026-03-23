@@ -110,12 +110,35 @@ def collect_from_feed(
         if existing:
             continue
 
+        # Extract thumbnail from RSS feed metadata
+        thumbnail_url = None
+        # Try media:thumbnail
+        media_thumbnail = getattr(entry, "media_thumbnail", None)
+        if media_thumbnail and len(media_thumbnail) > 0:
+            thumbnail_url = media_thumbnail[0].get("url")
+        # Try media:content
+        if not thumbnail_url:
+            media_content = getattr(entry, "media_content", None)
+            if media_content and len(media_content) > 0:
+                for mc in media_content:
+                    if mc.get("medium") == "image" or (mc.get("type", "").startswith("image/")):
+                        thumbnail_url = mc.get("url")
+                        break
+        # Try enclosure (image type)
+        if not thumbnail_url:
+            enclosures = getattr(entry, "enclosures", [])
+            for enc in enclosures:
+                if enc.get("type", "").startswith("image/"):
+                    thumbnail_url = enc.get("href") or enc.get("url")
+                    break
+
         article = Article(
             source_id=source.id,
             source_type=source.type,
             original_title=title,
             original_content=summary,
             url=link,
+            thumbnail_url=thumbnail_url,
             published_at=published_at,
             content_hash=content_hash,
         )

@@ -85,6 +85,15 @@ async def search_youtube_videos(
                 if not video_id:
                     continue
 
+                # YouTube provides thumbnails at multiple resolutions
+                thumbnails = snippet.get("thumbnails", {})
+                thumbnail_url = (
+                    thumbnails.get("high", {}).get("url")
+                    or thumbnails.get("medium", {}).get("url")
+                    or thumbnails.get("default", {}).get("url")
+                    or f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
+                )
+
                 videos.append({
                     "video_id": video_id,
                     "title": snippet.get("title", ""),
@@ -92,6 +101,8 @@ async def search_youtube_videos(
                     "channel_title": snippet.get("channelTitle", ""),
                     "published_at": snippet.get("publishedAt", ""),
                     "url": f"https://www.youtube.com/watch?v={video_id}",
+                    "thumbnail_url": thumbnail_url,
+                    "video_url": f"https://www.youtube.com/embed/{video_id}",
                 })
 
             logger.info("Fetched %d videos from YouTube search", len(videos))
@@ -156,6 +167,8 @@ async def collect_youtube(db: Session, max_results: int = 10) -> list[Article]:
             original_title=f"[{channel}] {title}",
             original_content=description,
             url=video["url"],
+            thumbnail_url=video.get("thumbnail_url"),
+            video_url=video.get("video_url"),
             published_at=published_at,
             content_hash=content_hash,
         )

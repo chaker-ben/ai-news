@@ -103,6 +103,20 @@ export default async function ArticlesPage({
               }}
             >
               <div className="flex items-start gap-4">
+                {/* Thumbnail */}
+                {article.thumbnail_url && (
+                  <div
+                    className="hidden sm:block shrink-0 w-24 h-16 rounded-lg overflow-hidden"
+                    style={{ background: "var(--bg-elevated)" }}
+                  >
+                    <img
+                      src={article.thumbnail_url}
+                      alt=""
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   {/* Badges row */}
                   <div className="flex flex-wrap items-center gap-2">

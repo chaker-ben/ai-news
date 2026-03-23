@@ -81,6 +81,8 @@ class Article(Base):
     summary_en = Column(Text, nullable=True)
     summary_ar = Column(Text, nullable=True)
     url = Column(String, nullable=False)
+    thumbnail_url = Column(String, nullable=True)
+    video_url = Column(String, nullable=True)
     published_at = Column(DateTime, nullable=False)
     collected_at = Column(DateTime, default=datetime.utcnow)
     score = Column(Float, default=0.0)
