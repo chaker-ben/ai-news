@@ -145,3 +145,31 @@ export async function triggerDigest(): Promise<{ status: string }> {
     next: { revalidate: 0 },
   });
 }
+
+export interface AdjacentArticles {
+  prev: { id: string; title: string } | null;
+  next: { id: string; title: string } | null;
+}
+
+export async function getAdjacentArticles(
+  currentId: string,
+): Promise<AdjacentArticles> {
+  try {
+    const { articles } = await getArticles({ limit: 100 });
+    const idx = articles.findIndex((a) => a.id === currentId);
+    if (idx === -1) return { prev: null, next: null };
+
+    const prev =
+      idx > 0
+        ? { id: articles[idx - 1].id, title: articles[idx - 1].title }
+        : null;
+    const next =
+      idx < articles.length - 1
+        ? { id: articles[idx + 1].id, title: articles[idx + 1].title }
+        : null;
+
+    return { prev, next };
+  } catch {
+    return { prev: null, next: null };
+  }
+}

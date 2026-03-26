@@ -5,48 +5,39 @@ import {
   ArrowUpRight,
   ChevronLeft,
   Clock,
-  CheckCircle2,
   Calendar,
-  Globe,
-  Hash,
 } from "lucide-react";
-import { getArticle } from "@/lib/api";
+import { getArticle, getAdjacentArticles } from "@/lib/api";
 import { Link } from "@/i18n/routing";
+import { ArticleReader } from "@/components/article-reader";
+import { ArticleNavigation } from "@/components/article-navigation";
+import { BookmarkButton } from "@/components/bookmark-button";
 
 function ScoreBadge({ score }: { score: number }) {
-  let color = "var(--color-neutral-500)";
+  let color = "var(--color-neutral-400)";
   let bg = "var(--bg-elevated)";
-  let label = "Mineur";
   if (score >= 9) {
     color = "var(--color-error)";
     bg = "rgb(239 68 68 / 0.1)";
-    label = "Breaking";
   } else if (score >= 7) {
     color = "var(--color-warning)";
     bg = "rgb(245 158 11 / 0.1)";
-    label = "Important";
   } else if (score >= 5) {
     color = "var(--color-primary-500)";
     bg = "rgb(59 130 246 / 0.1)";
-    label = "Intéressant";
   }
 
   return (
-    <div className="flex items-center gap-2">
-      <span
-        className="inline-flex items-center rounded-full px-3 py-1 text-sm font-bold"
-        style={{ color, background: bg }}
-      >
-        {score.toFixed(1)} / 10
-      </span>
-      <span className="text-sm" style={{ color }}>
-        {label}
-      </span>
-    </div>
+    <span
+      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold tabular-nums"
+      style={{ color, background: bg }}
+    >
+      {score.toFixed(1)}
+    </span>
   );
 }
 
-function SourceTypeBadge({ type }: { type: string }) {
+function SourceIcon({ type }: { type: string }) {
   const colors: Record<string, string> = {
     blog: "var(--color-primary-500)",
     twitter: "#1DA1F2",
@@ -57,7 +48,7 @@ function SourceTypeBadge({ type }: { type: string }) {
 
   return (
     <span
-      className="inline-flex items-center rounded-md px-2.5 py-1 text-xs font-semibold uppercase tracking-wider"
+      className="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold uppercase tracking-wider"
       style={{
         color: colors[type] || "var(--text-muted)",
         background: `color-mix(in srgb, ${colors[type] || "var(--text-muted)"} 12%, transparent)`,
@@ -68,30 +59,12 @@ function SourceTypeBadge({ type }: { type: string }) {
   );
 }
 
-function MetaItem({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ size?: number }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center gap-2 text-sm">
-      <Icon size={14} />
-      <span style={{ color: "var(--text-muted)" }}>{label} :</span>
-      <span style={{ color: "var(--text-secondary)" }}>{value}</span>
-    </div>
-  );
-}
-
 export default async function ArticleDetailPage({
   params,
 }: {
   params: Promise<{ id: string; locale: string }>;
 }) {
-  const { id } = await params;
+  const { id, locale } = await params;
   const t = await getTranslations("articles");
 
   let article;
@@ -101,128 +74,57 @@ export default async function ArticleDetailPage({
     notFound();
   }
 
-  const { locale } = await params;
   const intlLocale = getIntlLocale(locale);
   const localized = getLocalizedArticle(article, locale);
+  const adjacent = await getAdjacentArticles(id);
+
   const publishedDate = article.published_at
     ? new Date(article.published_at).toLocaleDateString(intlLocale, {
         weekday: "long",
         day: "numeric",
         month: "long",
         year: "numeric",
+      })
+    : null;
+
+  const publishedTime = article.published_at
+    ? new Date(article.published_at).toLocaleTimeString(intlLocale, {
         hour: "2-digit",
         minute: "2-digit",
       })
-    : "—";
-  const collectedDate = article.collected_at
-    ? new Date(article.collected_at).toLocaleDateString(intlLocale, {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
-      })
-    : "—";
+    : null;
+
+  const wordCount = (localized.summary || "").split(/\s+/).length;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
+  // Build the full text for TTS
+  const ttsText = [localized.title, localized.summary].filter(Boolean).join(". ");
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      {/* Back link */}
-      <Link
-        href="/articles"
-        className="inline-flex items-center gap-1 text-sm transition-colors"
-        style={{ color: "var(--text-muted)" }}
-      >
-        <ChevronLeft size={16} />
-        {t("title")}
-      </Link>
-
-      {/* Header card */}
-      <div
-        className="rounded-xl p-6"
-        style={{
-          background: "var(--bg-surface)",
-          border: "1px solid var(--border-subtle)",
-        }}
-      >
-        {/* Badges */}
-        <div className="flex flex-wrap items-center gap-3">
-          <SourceTypeBadge type={article.source_type} />
-          {article.notified ? (
-            <span
-              className="flex items-center gap-1 text-xs"
-              style={{ color: "var(--color-success)" }}
-            >
-              <CheckCircle2 size={12} />
-              {t("notified")}
-            </span>
-          ) : (
-            <span
-              className="flex items-center gap-1 text-xs"
-              style={{ color: "var(--text-muted)" }}
-            >
-              <Clock size={12} />
-              {t("pending")}
-            </span>
-          )}
-        </div>
-
-        {/* Title */}
-        <h1
-          className="mt-4 text-xl font-bold leading-snug lg:text-2xl"
-          style={{ color: "var(--text-primary)" }}
-        >
-          {localized.title}
-        </h1>
-
-        {/* Original title */}
-        {localized.title !== article.original_title && (
-          <p
-            className="mt-2 text-sm italic"
-            style={{ color: "var(--text-muted)" }}
-          >
-            {article.original_title}
-          </p>
-        )}
-
-        {/* Score */}
-        <div className="mt-4">
-          <ScoreBadge score={article.score} />
-        </div>
-
-        {/* Meta */}
-        <div
-          className="mt-5 space-y-2 pt-5"
-          style={{ borderBlockStart: "1px solid var(--border-subtle)" }}
-        >
-          <MetaItem icon={Calendar} label={t("publishedAt")} value={publishedDate} />
-          <MetaItem icon={Clock} label={t("collectedAt")} value={collectedDate} />
-          <MetaItem icon={Globe} label={t("source")} value={article.source_type} />
-          <MetaItem
-            icon={Hash}
-            label="Hash"
-            value={article.content_hash.slice(0, 12) + "..."}
-          />
-        </div>
-
-        {/* Link to original */}
-        <a
-          href={article.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-5 inline-flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium transition-all"
+    <article className="mx-auto max-w-2xl pb-12">
+      {/* Top bar */}
+      <div className="mb-8 flex items-center justify-between">
+        <Link
+          href="/articles"
+          className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-all duration-200"
           style={{
-            background: "var(--color-primary-600)",
-            color: "white",
+            color: "var(--text-muted)",
+            background: "transparent",
           }}
         >
-          {t("viewOriginal")}
-          <ArrowUpRight size={16} />
-        </a>
+          <ChevronLeft size={16} />
+          {t("backToArticles")}
+        </Link>
+
+        <div className="flex items-center gap-2">
+          <BookmarkButton articleId={article.id} />
+        </div>
       </div>
 
-      {/* Video embed (YouTube) */}
+      {/* Hero media */}
       {article.video_url && (
         <div
-          className="overflow-hidden rounded-xl"
+          className="mb-8 overflow-hidden rounded-2xl"
           style={{ border: "1px solid var(--border-subtle)" }}
         >
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -237,39 +139,106 @@ export default async function ArticleDetailPage({
         </div>
       )}
 
-      {/* Thumbnail (if no video) */}
       {!article.video_url && article.thumbnail_url && (
         <div
-          className="overflow-hidden rounded-xl"
+          className="mb-8 overflow-hidden rounded-2xl"
           style={{ border: "1px solid var(--border-subtle)" }}
         >
           <img
             src={article.thumbnail_url}
-            alt={localized.title}
-            className="w-full max-h-80 object-cover"
-            loading="lazy"
+            alt=""
+            className="w-full object-cover"
+            style={{ maxHeight: "360px" }}
+            loading="eager"
+          />
+        </div>
+      )}
+
+      {/* Meta bar */}
+      <div className="mb-6 flex flex-wrap items-center gap-3">
+        <SourceIcon type={article.source_type} />
+        <ScoreBadge score={article.score} />
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+          {readingTime} {t("readingTime")}
+        </span>
+      </div>
+
+      {/* Title */}
+      <h1
+        className="text-2xl font-bold leading-tight tracking-tight lg:text-3xl"
+        style={{ color: "var(--text-primary)" }}
+      >
+        {localized.title}
+      </h1>
+
+      {/* Original title (if different) */}
+      {localized.title !== article.original_title && (
+        <p
+          className="mt-3 text-sm italic"
+          style={{ color: "var(--text-muted)" }}
+        >
+          {article.original_title}
+        </p>
+      )}
+
+      {/* Date + source */}
+      <div
+        className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm"
+        style={{ color: "var(--text-muted)" }}
+      >
+        {publishedDate && (
+          <span className="inline-flex items-center gap-1.5">
+            <Calendar size={14} />
+            <time>{publishedDate}</time>
+            {publishedTime && (
+              <span className="text-xs opacity-60">{publishedTime}</span>
+            )}
+          </span>
+        )}
+        {article.collected_at && (
+          <span className="inline-flex items-center gap-1.5">
+            <Clock size={14} />
+            {t("collectedAt")} :{" "}
+            {new Date(article.collected_at).toLocaleDateString(intlLocale, {
+              day: "numeric",
+              month: "short",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </span>
+        )}
+      </div>
+
+      {/* Divider */}
+      <div
+        className="my-8"
+        style={{
+          height: "1px",
+          background:
+            "linear-gradient(to right, transparent, var(--border-subtle), transparent)",
+        }}
+      />
+
+      {/* Audio reader */}
+      {ttsText.length > 20 && (
+        <div className="mb-8">
+          <ArticleReader
+            text={ttsText}
+            locale={locale}
+            label={t("listenArticle")}
           />
         </div>
       )}
 
       {/* Summary */}
       {localized.summary && (
-        <div
-          className="rounded-xl p-6"
-          style={{
-            background: "var(--bg-surface)",
-            border: "1px solid var(--border-subtle)",
-          }}
-        >
-          <h2
-            className="mb-4 text-lg font-semibold"
-            style={{ color: "var(--text-primary)" }}
-          >
-            {t("summary")}
-          </h2>
+        <div className="mb-8">
           <p
-            className="text-sm leading-relaxed"
-            style={{ color: "var(--text-secondary)" }}
+            className="text-base leading-relaxed lg:text-lg lg:leading-relaxed"
+            style={{
+              color: "var(--text-secondary)",
+              lineHeight: "1.8",
+            }}
           >
             {localized.summary}
           </p>
@@ -279,30 +248,65 @@ export default async function ArticleDetailPage({
       {/* Original content */}
       {article.original_content && (
         <div
-          className="rounded-xl p-6"
+          className="mb-8 rounded-xl p-6"
           style={{
             background: "var(--bg-surface)",
             border: "1px solid var(--border-subtle)",
           }}
         >
           <h2
-            className="mb-4 text-lg font-semibold"
-            style={{ color: "var(--text-primary)" }}
+            className="mb-4 text-sm font-semibold uppercase tracking-wider"
+            style={{ color: "var(--text-muted)" }}
           >
             {t("originalTitle")}
           </h2>
           <div
-            className="prose prose-sm max-w-none text-sm leading-relaxed"
-            style={{ color: "var(--text-muted)" }}
+            className="space-y-3 text-sm leading-relaxed"
+            style={{ color: "var(--text-secondary)", lineHeight: "1.75" }}
           >
-            {article.original_content.split("\n").map((line, i) => (
-              <p key={i} className="mb-2">
-                {line}
-              </p>
-            ))}
+            {article.original_content.split("\n").map((line, i) =>
+              line.trim() ? (
+                <p key={i}>{line}</p>
+              ) : null,
+            )}
           </div>
         </div>
       )}
-    </div>
+
+      {/* CTA original article */}
+      <div className="mb-10 flex justify-center">
+        <a
+          href={article.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold transition-all duration-200"
+          style={{
+            background: "var(--color-primary-600)",
+            color: "white",
+            boxShadow: "var(--shadow-glow-primary)",
+          }}
+        >
+          {t("viewOriginal")}
+          <ArrowUpRight size={16} />
+        </a>
+      </div>
+
+      {/* Divider */}
+      <div
+        className="mb-8"
+        style={{
+          height: "1px",
+          background:
+            "linear-gradient(to right, transparent, var(--border-subtle), transparent)",
+        }}
+      />
+
+      {/* Article navigation */}
+      <ArticleNavigation
+        adjacent={adjacent}
+        prevLabel={t("previousArticle")}
+        nextLabel={t("nextArticle")}
+      />
+    </article>
   );
 }

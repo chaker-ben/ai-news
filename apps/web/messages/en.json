@@ -22,7 +22,12 @@
     "sources": "Sources",
     "settings": "Settings",
     "notifications": "Notifications",
-    "stats": "Statistics"
+    "alerts": "Alerts",
+    "bookmarks": "Bookmarks",
+    "stats": "Statistics",
+    "analytics": "Analytics",
+    "team": "Team",
+    "pricing": "Pricing"
   },
   "auth": {
     "signIn": "Sign in",
@@ -59,7 +64,12 @@
     "sortNewest": "Newest first",
     "sortScore": "Highest score",
     "empty": "No articles found",
-    "emptyCta": "Check your filters or run a collection"
+    "emptyCta": "Check your filters or run a collection",
+    "listenArticle": "Listen",
+    "readingTime": "min read",
+    "previousArticle": "Previous",
+    "nextArticle": "Next",
+    "backToArticles": "Back to articles"
   },
   "sources": {
     "title": "Sources",
@@ -94,7 +104,153 @@
     "themeSystem": "System",
     "language": "Language",
     "apiKeys": "API Keys",
-    "dangerZone": "Danger zone"
+    "dangerZone": "Danger zone",
+    "notifications": "Notifications",
+    "notificationsDesc": "Configure how and when you receive updates",
+    "whatsappNumber": "WhatsApp Number",
+    "whatsappPlaceholder": "+1 555 123 4567",
+    "emailNotifications": "Email Notifications",
+    "digestEnabled": "Daily Digest",
+    "weeklyDigest": "Weekly Digest",
+    "digestTime": "Digest Time",
+    "timezone": "Timezone",
+    "contentPreferences": "Content Preferences",
+    "contentPreferencesDesc": "Customize your AI news feed",
+    "minScore": "Minimum Score",
+    "maxArticles": "Max Articles per Digest",
+    "categories": "Categories",
+    "categoriesDesc": "Select the AI domains you're interested in",
+    "noCategoriesAvailable": "No categories available",
+    "save": "Save Changes",
+    "saving": "Saving...",
+    "saved": "Saved!"
+  },
+  "pricing": {
+    "title": "Plans & Pricing",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "perMonth": "/mo",
+    "perYear": "/yr",
+    "currentPlan": "Current Plan",
+    "upgrade": "Upgrade",
+    "downgrade": "Downgrade",
+    "contactUs": "Contact Us",
+    "save": "Save",
+    "mostPopular": "Most Popular",
+    "features": "Features"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "orderSummary": "Order Summary",
+    "paymentDetails": "Payment Details",
+    "processing": "Processing...",
+    "success": "Payment Successful!",
+    "successDesc": "Your plan is being activated...",
+    "redirecting": "Redirecting to dashboard...",
+    "error": "Payment failed. Please try again."
+  },
+  "billing": {
+    "title": "Billing",
+    "currentPlan": "Current Plan",
+    "status": "Status",
+    "nextBilling": "Next Billing Date",
+    "trialEnds": "Trial Ends",
+    "changePlan": "Change Plan",
+    "cancelSubscription": "Cancel Subscription",
+    "cancelConfirm": "Are you sure you want to cancel?",
+    "cancelReason": "Reason (optional)",
+    "cancelled": "Subscription cancelled",
+    "active": "Active",
+    "trialing": "Trial",
+    "inactive": "Inactive"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "description": "Insights about your AI news feed",
+    "dailyActivity": "Daily Activity (14 days)",
+    "sourceDistribution": "Source Distribution",
+    "scoreDistribution": "Score Distribution",
+    "topSources": "Top Sources",
+    "articles": "articles",
+    "avgScore": "Avg Score",
+    "today": "Today",
+    "totalArticles": "Total Articles",
+    "averageScore": "Average Score",
+    "articlesToday": "Articles Today",
+    "activeSources": "Active Sources"
+  },
+  "alerts": {
+    "title": "Smart Alerts",
+    "description": "Get notified when articles match your keywords",
+    "newAlert": "New Alert",
+    "name": "Alert Name",
+    "namePlaceholder": "e.g., GPT-5 news",
+    "keywords": "Keywords",
+    "keywordsPlaceholder": "Type and press Enter",
+    "channels": "Notification Channels",
+    "active": "Active",
+    "inactive": "Paused",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this alert?",
+    "empty": "No alerts configured",
+    "emptyCta": "Create your first smart alert to get notified about specific topics"
+  },
+  "team": {
+    "title": "Team",
+    "createOrg": "Create Organization",
+    "orgName": "Organization Name",
+    "orgSlug": "URL Slug",
+    "members": "Members",
+    "inviteMember": "Invite Member",
+    "email": "Email address",
+    "role": "Role",
+    "owner": "Owner",
+    "admin": "Admin",
+    "member": "Member",
+    "invite": "Invite",
+    "remove": "Remove",
+    "removeConfirm": "Remove this member?",
+    "cancel": "Cancel",
+    "upgradeRequired": "Team plan required",
+    "upgradeDesc": "Upgrade to Team or Enterprise to collaborate with your team",
+    "upgradeCta": "View Plans",
+    "noOrg": "No organization yet",
+    "noOrgDesc": "Create an organization to invite team members"
+  },
+  "bookmarks": {
+    "title": "Bookmarks",
+    "empty": "No bookmarks yet",
+    "emptyCta": "Save articles from the articles page to read later",
+    "remove": "Remove",
+    "viewOriginal": "View original"
+  },
+  "onboarding": {
+    "loading": "Loading your setup...",
+    "step1Title": "What AI topics interest you?",
+    "step1Subtitle": "Select the categories you want to follow",
+    "step2Title": "Set up your notifications",
+    "step2Subtitle": "Choose how and when you receive your digest",
+    "step3Title": "You're all set!",
+    "step3Subtitle": "Here's a summary of your preferences",
+    "selectAll": "Select All",
+    "clearAll": "Clear All",
+    "next": "Next",
+    "back": "Back",
+    "finish": "Go to Dashboard",
+    "saving": "Saving...",
+    "selectedCategories": "Selected Categories",
+    "notificationChannels": "Notification Channels",
+    "digestSchedule": "Digest Schedule",
+    "whatsappNumber": "WhatsApp Number",
+    "whatsappPlaceholder": "+1 555 123 4567",
+    "emailNotifications": "Email Notifications",
+    "telegramChatId": "Telegram Chat ID",
+    "telegramPlaceholder": "Your Telegram chat ID (optional)",
+    "digestTime": "Digest Time",
+    "timezone": "Timezone",
+    "noChannelsConfigured": "No notification channels configured"
   },
   "errors": {
     "generic": "An unexpected error occurred",
@@ -103,5 +259,135 @@
     "forbidden": "Access forbidden",
     "validation": "Validation error",
     "network": "Network error — check your connection"
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "signIn": "Sign In",
+      "getStarted": "Get Started"
+    },
+    "hero": {
+      "headline": "Your AI News Intelligence Platform",
+      "subheadline": "Stay ahead of AI breakthroughs. Get personalized digests from 100+ sources, delivered to your WhatsApp, email, or Telegram.",
+      "ctaPrimary": "Start Free",
+      "ctaSecondary": "View Demo",
+      "trustBadge": "Monitoring 100+ AI sources daily"
+    },
+    "features": {
+      "title": "Everything you need to stay ahead",
+      "subtitle": "Powerful tools to aggregate, analyze, and deliver AI news that matters to you.",
+      "aggregation": {
+        "name": "Smart Aggregation",
+        "desc": "Collect from blogs, Twitter, YouTube, Reddit, Arxiv and more — all in one place."
+      },
+      "summaries": {
+        "name": "AI-Powered Summaries",
+        "desc": "Claude AI translates and summarizes articles in 3 languages automatically."
+      },
+      "delivery": {
+        "name": "Multi-Channel Delivery",
+        "desc": "WhatsApp, Email, Telegram — choose how and when you receive your digest."
+      },
+      "categories": {
+        "name": "Custom Categories",
+        "desc": "10 AI domains — LLM, Robotics, Ethics, Computer Vision, and more."
+      },
+      "alerts": {
+        "name": "Smart Alerts",
+        "desc": "Set keywords and get notified instantly when matching articles appear."
+      },
+      "analytics": {
+        "name": "Analytics Dashboard",
+        "desc": "Track trends, relevance scores, and source performance over time."
+      }
+    },
+    "howItWorks": {
+      "title": "How it works",
+      "step1": {
+        "title": "Choose your interests",
+        "desc": "Select the AI categories and sources you want to follow."
+      },
+      "step2": {
+        "title": "Set your preferences",
+        "desc": "Pick your channels, schedule, and preferred language."
+      },
+      "step3": {
+        "title": "Get your daily digest",
+        "desc": "Receive a personalized summary of the most relevant AI news every day."
+      }
+    },
+    "pricing": {
+      "title": "Simple, transparent pricing",
+      "subtitle": "Start free. Upgrade when you need more.",
+      "perMonth": "/mo",
+      "popular": "Most Popular",
+      "cta": "Get Started",
+      "plans": {
+        "free": {
+          "name": "Free",
+          "featureSources10": "10 sources monitored",
+          "featureDigest1": "1 daily digest",
+          "featureWhatsapp": "WhatsApp delivery"
+        },
+        "pro": {
+          "name": "Pro",
+          "featureSourcesUnlimited": "Unlimited sources",
+          "featureDigest3": "3 daily digests",
+          "featureAllChannels": "All delivery channels",
+          "featureAlerts": "Smart keyword alerts",
+          "featureAnalytics": "Full analytics dashboard"
+        },
+        "team": {
+          "name": "Team",
+          "featureEverythingPro": "Everything in Pro",
+          "featureMembers5": "Up to 5 team members",
+          "featureSharedDigests": "Shared digests & reports",
+          "featurePrioritySupport": "Priority support",
+          "featureApi": "API access"
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "sources": {
+        "q": "What sources do you monitor?",
+        "a": "We monitor over 100 sources including major AI blogs, Arxiv papers, Twitter/X accounts, YouTube channels, Reddit communities, and industry newsletters."
+      },
+      "scoring": {
+        "q": "How does the AI scoring work?",
+        "a": "Each article is scored by Claude AI based on relevance, novelty, and impact. Scores range from 0 to 100. You can set a minimum score threshold for your digests."
+      },
+      "schedule": {
+        "q": "Can I customize notification times?",
+        "a": "Yes. You can set up to 3 daily digest times and choose instant alerts for high-priority keywords."
+      },
+      "languages": {
+        "q": "What languages are supported?",
+        "a": "Articles are automatically translated and summarized in French, English, and Arabic. The original content is always preserved."
+      },
+      "freePlan": {
+        "q": "Is there a free plan?",
+        "a": "Yes. The free plan includes 10 monitored sources, 1 daily digest, and WhatsApp delivery. No credit card required."
+      }
+    },
+    "cta": {
+      "title": "Ready to stay ahead of AI?",
+      "subtitle": "Join thousands of professionals who get their AI news through AI News."
+    },
+    "footer": {
+      "tagline": "AI news intelligence for professionals. Aggregate, summarize, deliver.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "about": "About",
+      "blog": "Blog",
+      "careers": "Careers",
+      "privacy": "Privacy Policy",
+      "terms": "Terms of Service",
+      "copyright": "2026 AI News. All rights reserved.",
+      "madeWith": "Made with Claude AI"
+    }
   }
 }

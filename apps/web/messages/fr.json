@@ -22,7 +22,12 @@
     "sources": "Sources",
     "settings": "Paramètres",
     "notifications": "Notifications",
-    "stats": "Statistiques"
+    "alerts": "Alertes",
+    "bookmarks": "Favoris",
+    "stats": "Statistiques",
+    "analytics": "Analyses",
+    "team": "\u00c9quipe",
+    "pricing": "Tarifs"
   },
   "auth": {
     "signIn": "Se connecter",
@@ -59,7 +64,12 @@
     "sortNewest": "Plus récent",
     "sortScore": "Meilleur score",
     "empty": "Aucun article trouvé",
-    "emptyCta": "Vérifiez vos filtres ou lancez une collecte"
+    "emptyCta": "Vérifiez vos filtres ou lancez une collecte",
+    "listenArticle": "Écouter",
+    "readingTime": "min de lecture",
+    "previousArticle": "Précédent",
+    "nextArticle": "Suivant",
+    "backToArticles": "Retour aux articles"
   },
   "sources": {
     "title": "Sources",
@@ -94,7 +104,153 @@
     "themeSystem": "Système",
     "language": "Langue",
     "apiKeys": "Clés API",
-    "dangerZone": "Zone dangereuse"
+    "dangerZone": "Zone dangereuse",
+    "notifications": "Notifications",
+    "notificationsDesc": "Configurez comment et quand vous recevez les mises à jour",
+    "whatsappNumber": "Numéro WhatsApp",
+    "whatsappPlaceholder": "+33 6 12 34 56 78",
+    "emailNotifications": "Notifications par e-mail",
+    "digestEnabled": "Digest quotidien",
+    "weeklyDigest": "Digest hebdomadaire",
+    "digestTime": "Heure du digest",
+    "timezone": "Fuseau horaire",
+    "contentPreferences": "Préférences de contenu",
+    "contentPreferencesDesc": "Personnalisez votre flux d'actualités IA",
+    "minScore": "Score minimum",
+    "maxArticles": "Articles max par digest",
+    "categories": "Catégories",
+    "categoriesDesc": "Sélectionnez les domaines IA qui vous intéressent",
+    "noCategoriesAvailable": "Aucune catégorie disponible",
+    "save": "Enregistrer les modifications",
+    "saving": "Enregistrement...",
+    "saved": "Enregistré !"
+  },
+  "pricing": {
+    "title": "Plans et tarifs",
+    "monthly": "Mensuel",
+    "yearly": "Annuel",
+    "perMonth": "/mois",
+    "perYear": "/an",
+    "currentPlan": "Plan actuel",
+    "upgrade": "Passer au plan",
+    "downgrade": "Rétrograder",
+    "contactUs": "Nous contacter",
+    "save": "Économisez",
+    "mostPopular": "Le plus populaire",
+    "features": "Fonctionnalités"
+  },
+  "checkout": {
+    "title": "Paiement",
+    "orderSummary": "Récapitulatif de commande",
+    "paymentDetails": "Détails du paiement",
+    "processing": "Traitement en cours...",
+    "success": "Paiement réussi !",
+    "successDesc": "Votre plan est en cours d'activation...",
+    "redirecting": "Redirection vers le tableau de bord...",
+    "error": "Le paiement a échoué. Veuillez réessayer."
+  },
+  "billing": {
+    "title": "Facturation",
+    "currentPlan": "Plan actuel",
+    "status": "Statut",
+    "nextBilling": "Prochaine facturation",
+    "trialEnds": "Fin de l'essai",
+    "changePlan": "Changer de plan",
+    "cancelSubscription": "Annuler l'abonnement",
+    "cancelConfirm": "Êtes-vous sûr de vouloir annuler ?",
+    "cancelReason": "Raison (optionnel)",
+    "cancelled": "Abonnement annulé",
+    "active": "Actif",
+    "trialing": "Essai",
+    "inactive": "Inactif"
+  },
+  "analytics": {
+    "title": "Analyses",
+    "description": "Aper\u00e7u de votre flux d'actualit\u00e9s IA",
+    "dailyActivity": "Activit\u00e9 quotidienne (14 jours)",
+    "sourceDistribution": "R\u00e9partition des sources",
+    "scoreDistribution": "Distribution des scores",
+    "topSources": "Top sources",
+    "articles": "articles",
+    "avgScore": "Score moyen",
+    "today": "Aujourd'hui",
+    "totalArticles": "Total articles",
+    "averageScore": "Score moyen",
+    "articlesToday": "Articles aujourd'hui",
+    "activeSources": "Sources actives"
+  },
+  "alerts": {
+    "title": "Alertes intelligentes",
+    "description": "Soyez notifi\u00e9 quand des articles correspondent \u00e0 vos mots-cl\u00e9s",
+    "newAlert": "Nouvelle alerte",
+    "name": "Nom de l'alerte",
+    "namePlaceholder": "ex. : Actualit\u00e9s GPT-5",
+    "keywords": "Mots-cl\u00e9s",
+    "keywordsPlaceholder": "Tapez et appuyez sur Entr\u00e9e",
+    "channels": "Canaux de notification",
+    "active": "Active",
+    "inactive": "En pause",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "deleteConfirm": "Supprimer cette alerte ?",
+    "empty": "Aucune alerte configur\u00e9e",
+    "emptyCta": "Cr\u00e9ez votre premi\u00e8re alerte intelligente pour \u00eatre notifi\u00e9 sur des sujets sp\u00e9cifiques"
+  },
+  "team": {
+    "title": "\u00c9quipe",
+    "createOrg": "Cr\u00e9er une organisation",
+    "orgName": "Nom de l'organisation",
+    "orgSlug": "Identifiant URL",
+    "members": "Membres",
+    "inviteMember": "Inviter un membre",
+    "email": "Adresse e-mail",
+    "role": "R\u00f4le",
+    "owner": "Propri\u00e9taire",
+    "admin": "Administrateur",
+    "member": "Membre",
+    "invite": "Inviter",
+    "remove": "Retirer",
+    "removeConfirm": "Retirer ce membre ?",
+    "cancel": "Annuler",
+    "upgradeRequired": "Plan \u00c9quipe requis",
+    "upgradeDesc": "Passez au plan \u00c9quipe ou Entreprise pour collaborer avec votre \u00e9quipe",
+    "upgradeCta": "Voir les plans",
+    "noOrg": "Pas encore d'organisation",
+    "noOrgDesc": "Cr\u00e9ez une organisation pour inviter des membres"
+  },
+  "bookmarks": {
+    "title": "Favoris",
+    "empty": "Aucun favori pour le moment",
+    "emptyCta": "Enregistrez des articles depuis la page articles pour les lire plus tard",
+    "remove": "Retirer",
+    "viewOriginal": "Voir l'original"
+  },
+  "onboarding": {
+    "loading": "Chargement de votre configuration...",
+    "step1Title": "Quels sujets IA vous intéressent ?",
+    "step1Subtitle": "Sélectionnez les catégories que vous souhaitez suivre",
+    "step2Title": "Configurez vos notifications",
+    "step2Subtitle": "Choisissez comment et quand recevoir votre digest",
+    "step3Title": "Vous êtes prêt !",
+    "step3Subtitle": "Voici un résumé de vos préférences",
+    "selectAll": "Tout sélectionner",
+    "clearAll": "Tout effacer",
+    "next": "Suivant",
+    "back": "Retour",
+    "finish": "Aller au tableau de bord",
+    "saving": "Enregistrement...",
+    "selectedCategories": "Catégories sélectionnées",
+    "notificationChannels": "Canaux de notification",
+    "digestSchedule": "Horaire du digest",
+    "whatsappNumber": "Numéro WhatsApp",
+    "whatsappPlaceholder": "+33 6 12 34 56 78",
+    "emailNotifications": "Notifications par e-mail",
+    "telegramChatId": "ID du chat Telegram",
+    "telegramPlaceholder": "Votre ID de chat Telegram (optionnel)",
+    "digestTime": "Heure du digest",
+    "timezone": "Fuseau horaire",
+    "noChannelsConfigured": "Aucun canal de notification configuré"
   },
   "errors": {
     "generic": "Une erreur inattendue est survenue",
@@ -103,5 +259,135 @@
     "forbidden": "Accès interdit",
     "validation": "Erreur de validation",
     "network": "Erreur réseau — vérifiez votre connexion"
+  },
+  "landing": {
+    "nav": {
+      "features": "Fonctionnalités",
+      "pricing": "Tarifs",
+      "faq": "FAQ",
+      "signIn": "Connexion",
+      "getStarted": "Commencer"
+    },
+    "hero": {
+      "headline": "Votre plateforme d'intelligence IA",
+      "subheadline": "Gardez une longueur d'avance sur les avancées de l'IA. Recevez des digests personnalisés depuis plus de 100 sources, livrés sur WhatsApp, email ou Telegram.",
+      "ctaPrimary": "Commencer gratuitement",
+      "ctaSecondary": "Voir la démo",
+      "trustBadge": "Plus de 100 sources IA surveillées quotidiennement"
+    },
+    "features": {
+      "title": "Tout ce qu'il faut pour rester à la pointe",
+      "subtitle": "Des outils puissants pour agréger, analyser et diffuser les actualités IA qui comptent pour vous.",
+      "aggregation": {
+        "name": "Agrégation intelligente",
+        "desc": "Collectez depuis les blogs, Twitter, YouTube, Reddit, Arxiv et plus encore — le tout en un seul endroit."
+      },
+      "summaries": {
+        "name": "Résumés par IA",
+        "desc": "Claude AI traduit et résume automatiquement les articles dans 3 langues."
+      },
+      "delivery": {
+        "name": "Livraison multicanal",
+        "desc": "WhatsApp, Email, Telegram — choisissez comment et quand recevoir votre digest."
+      },
+      "categories": {
+        "name": "Catégories personnalisées",
+        "desc": "10 domaines IA — LLM, Robotique, Éthique, Vision par ordinateur, et plus."
+      },
+      "alerts": {
+        "name": "Alertes intelligentes",
+        "desc": "Définissez des mots-clés et soyez notifié instantanément quand un article correspond."
+      },
+      "analytics": {
+        "name": "Tableau de bord analytique",
+        "desc": "Suivez les tendances, les scores de pertinence et la performance des sources."
+      }
+    },
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "step1": {
+        "title": "Choisissez vos centres d'intérêt",
+        "desc": "Sélectionnez les catégories IA et les sources que vous souhaitez suivre."
+      },
+      "step2": {
+        "title": "Configurez vos préférences",
+        "desc": "Choisissez vos canaux, votre planning et votre langue préférée."
+      },
+      "step3": {
+        "title": "Recevez votre digest quotidien",
+        "desc": "Recevez chaque jour un résumé personnalisé des actualités IA les plus pertinentes."
+      }
+    },
+    "pricing": {
+      "title": "Tarifs simples et transparents",
+      "subtitle": "Commencez gratuitement. Passez au niveau supérieur quand vous en avez besoin.",
+      "perMonth": "/mois",
+      "popular": "Le plus populaire",
+      "cta": "Commencer",
+      "plans": {
+        "free": {
+          "name": "Gratuit",
+          "featureSources10": "10 sources surveillées",
+          "featureDigest1": "1 digest quotidien",
+          "featureWhatsapp": "Livraison WhatsApp"
+        },
+        "pro": {
+          "name": "Pro",
+          "featureSourcesUnlimited": "Sources illimitées",
+          "featureDigest3": "3 digests quotidiens",
+          "featureAllChannels": "Tous les canaux de livraison",
+          "featureAlerts": "Alertes par mots-clés",
+          "featureAnalytics": "Tableau de bord analytique complet"
+        },
+        "team": {
+          "name": "Équipe",
+          "featureEverythingPro": "Tout ce qui est dans Pro",
+          "featureMembers5": "Jusqu'à 5 membres d'équipe",
+          "featureSharedDigests": "Digests et rapports partagés",
+          "featurePrioritySupport": "Support prioritaire",
+          "featureApi": "Accès API"
+        }
+      }
+    },
+    "faq": {
+      "title": "Questions fréquentes",
+      "sources": {
+        "q": "Quelles sources surveillez-vous ?",
+        "a": "Nous surveillons plus de 100 sources, dont les principaux blogs IA, les articles Arxiv, les comptes Twitter/X, les chaînes YouTube, les communautés Reddit et les newsletters spécialisées."
+      },
+      "scoring": {
+        "q": "Comment fonctionne le scoring IA ?",
+        "a": "Chaque article est évalué par Claude AI selon sa pertinence, sa nouveauté et son impact. Les scores vont de 0 à 100. Vous pouvez définir un score minimum pour vos digests."
+      },
+      "schedule": {
+        "q": "Puis-je personnaliser les heures de notification ?",
+        "a": "Oui. Vous pouvez configurer jusqu'à 3 heures de digest quotidien et choisir des alertes instantanées pour les mots-clés prioritaires."
+      },
+      "languages": {
+        "q": "Quelles langues sont supportées ?",
+        "a": "Les articles sont automatiquement traduits et résumés en français, anglais et arabe. Le contenu original est toujours conservé."
+      },
+      "freePlan": {
+        "q": "Y a-t-il un plan gratuit ?",
+        "a": "Oui. Le plan gratuit inclut 10 sources surveillées, 1 digest quotidien et la livraison WhatsApp. Aucune carte bancaire requise."
+      }
+    },
+    "cta": {
+      "title": "Prêt à garder une longueur d'avance sur l'IA ?",
+      "subtitle": "Rejoignez des milliers de professionnels qui reçoivent leurs actualités IA via AI News."
+    },
+    "footer": {
+      "tagline": "Veille IA pour les professionnels. Agrégation, résumé, livraison.",
+      "product": "Produit",
+      "company": "Entreprise",
+      "legal": "Légal",
+      "about": "À propos",
+      "blog": "Blog",
+      "careers": "Carrières",
+      "privacy": "Politique de confidentialité",
+      "terms": "Conditions d'utilisation",
+      "copyright": "2026 AI News. Tous droits réservés.",
+      "madeWith": "Fait avec Claude AI"
+    }
   }
 }
