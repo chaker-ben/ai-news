@@ -5,10 +5,10 @@ import {
   Radio,
   TrendingUp,
   ArrowUpRight,
-  RefreshCw,
 } from "lucide-react";
 import { getStats, getArticles } from "@/lib/api";
 import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
+import { Link } from "@/i18n/routing";
 
 function StatCard({
   label,
@@ -185,9 +185,10 @@ export default async function DashboardPage({
             {topArticles.map((article) => {
               const localized = getLocalizedArticle(article, locale);
               return (
-              <div
+              <Link
                 key={article.id}
-                className="flex items-start gap-4 px-6 py-4 transition-colors"
+                href={`/articles/${article.id}`}
+                className="group flex items-start gap-4 px-6 py-4 transition-colors"
                 style={{ borderColor: "var(--border-subtle)" }}
               >
                 <div className="flex-1 min-w-0">
@@ -196,7 +197,7 @@ export default async function DashboardPage({
                     <ScoreBadge score={article.score} />
                   </div>
                   <h3
-                    className="mt-2 text-sm font-medium leading-snug"
+                    className="mt-2 text-sm font-medium leading-snug group-hover:underline"
                     style={{ color: "var(--text-primary)" }}
                   >
                     {localized.title}
@@ -223,16 +224,13 @@ export default async function DashboardPage({
                       : "—"}
                   </p>
                 </div>
-                <a
-                  href={article.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="shrink-0 rounded-lg p-2 transition-colors"
-                  style={{ color: "var(--text-muted)" }}
+                <div
+                  className="shrink-0 rounded-lg p-2 opacity-0 transition-opacity group-hover:opacity-100"
+                  style={{ color: "var(--color-primary-400)" }}
                 >
                   <ArrowUpRight size={16} />
-                </a>
-              </div>
+                </div>
+              </Link>
               );
             })}
           </div>
