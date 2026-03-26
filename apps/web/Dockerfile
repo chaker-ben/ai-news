@@ -6,11 +6,13 @@ WORKDIR /app
 
 # Copy workspace config
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+
+# Copy all package.json files for dependency resolution
 COPY packages/db/package.json packages/db/
 COPY packages/db/prisma packages/db/prisma/
-COPY packages/types/package.json packages/types/ 2>/dev/null || true
-COPY packages/ui/package.json packages/ui/ 2>/dev/null || true
-COPY packages/utils/package.json packages/utils/ 2>/dev/null || true
+COPY packages/types/package.json packages/types/
+COPY packages/ui/package.json packages/ui/
+COPY packages/utils/package.json packages/utils/
 COPY apps/web/package.json apps/web/
 
 # Install dependencies
