@@ -22,6 +22,7 @@ RUN pnpm install --frozen-lockfile
 # Copy source
 COPY packages/ packages/
 COPY apps/web/ apps/web/
+COPY tokens/ tokens/
 
 # Generate Prisma client
 RUN cd packages/db && npx prisma generate
