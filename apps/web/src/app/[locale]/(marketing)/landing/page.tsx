@@ -3,6 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useState, useEffect, useRef, useCallback } from "react";
+import { LandingArticles } from "@/components/landing-articles";
 import {
   Zap,
   Brain,
@@ -66,6 +67,27 @@ export default function LandingPage() {
   const scrolled = useScrolled();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const fadeRef = useFadeIn();
+
+  const [publicArticles, setPublicArticles] = useState<Array<{
+    id: string;
+    title: string;
+    summary: string | null;
+    source_type: string;
+    score: number;
+    published_at: string | null;
+    thumbnail_url?: string | null;
+  }>>([]);
+
+  useEffect(() => {
+    const workersUrl = process.env.NEXT_PUBLIC_WORKERS_API_URL || "";
+    if (!workersUrl) return;
+    fetch(`${workersUrl}/articles?limit=6`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.articles) setPublicArticles(data.articles);
+      })
+      .catch(() => {});
+  }, []);
 
   const scrollTo = (id: string) => {
     setMobileMenuOpen(false);
@@ -754,6 +776,16 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        {/* ═══════════════════════ LATEST ARTICLES ═══════════════════════ */}
+        {publicArticles.length > 0 && (
+          <LandingArticles
+            articles={publicArticles}
+            title={locale === "ar" ? "آخر الأخبار" : locale === "en" ? "Latest AI News" : "Dernières actualités IA"}
+            cta={locale === "ar" ? "ابدأ مجاناً" : locale === "en" ? "Get started free" : "Commencer gratuitement"}
+            locale={locale}
+          />
+        )}
 
         {/* ═══════════════════════ PRICING ═══════════════════════ */}
         <section
