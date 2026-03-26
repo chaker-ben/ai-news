@@ -24,10 +24,10 @@ COPY packages/ packages/
 COPY apps/web/ apps/web/
 
 # Generate Prisma client
-RUN pnpm db:generate
+RUN cd packages/db && npx prisma generate
 
 # Build
-RUN pnpm build --filter=@ai-news/web
+RUN cd apps/web && npx next build
 
 # Production
 FROM node:20-alpine AS runner
