@@ -17,7 +17,7 @@ COPY packages/utils/package.json packages/utils/
 COPY apps/web/package.json apps/web/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source
 COPY packages/ packages/
