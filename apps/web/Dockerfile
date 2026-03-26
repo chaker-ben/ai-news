@@ -5,7 +5,8 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 WORKDIR /app
 
 # Copy workspace config
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN echo "shamefully-hoist=true" > .npmrc
 
 # Copy all package.json files for dependency resolution
 COPY packages/db/package.json packages/db/
