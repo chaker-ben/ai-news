@@ -4,7 +4,7 @@ RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
 
 WORKDIR /app
 
-# Copy workspace config
+# Copy workspace config (cache bust: v2)
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN echo "shamefully-hoist=true" > .npmrc
 
