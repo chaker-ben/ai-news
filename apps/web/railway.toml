@@ -1,0 +1,13 @@
+[build]
+builder = "nixpacks"
+buildCommand = "cd ../.. && pnpm install && pnpm db:generate && pnpm build --filter=@ai-news/web"
+
+[deploy]
+startCommand = "node apps/web/.next/standalone/server.js"
+healthcheckPath = "/"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
+
+[deploy.env]
+PORT = "3000"
+HOSTNAME = "0.0.0.0"
