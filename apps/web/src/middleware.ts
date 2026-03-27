@@ -44,7 +44,5 @@ export default clerkMiddleware(async (auth, req) => {
 });
 
 export const config = {
-  matcher: [
-    String.raw`/((?!_next|_vercel|.*\..*).*)`
-  ],
+  matcher: ["/((?!_next|_vercel|.*\\..*).*)"],
 };
