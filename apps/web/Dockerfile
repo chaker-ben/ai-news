@@ -20,7 +20,8 @@ COPY apps/web/package.json apps/web/
 RUN printf 'packages:\n  - "apps/web"\n  - "packages/*"\n' > pnpm-workspace.yaml
 
 # Install dependencies
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --no-frozen-lockfile && \
+    cd apps/web && pnpm add svix airwallex-payment-elements
 
 # Copy source
 COPY packages/ packages/
