@@ -7,6 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
 enum SourceType {
   blog
   twitter
@@ -17,16 +21,50 @@ enum SourceType {
   arxiv
 }
 
+enum PlanSlug {
+  free
+  pro
+  team
+  enterprise
+}
+
+enum SubscriptionStatus {
+  active
+  inactive
+  trialing
+  cancelled
+  expired
+}
+
+enum BillingCycle {
+  monthly
+  yearly
+}
+
+enum PaymentStatus {
+  unpaid
+  paid
+  past_due
+  trial
+  cancelled
+  authorized
+}
+
+// ─────────────────────────────────────────────
+// Existing Models
+// ─────────────────────────────────────────────
+
 model Source {
-  id            String     @id @default(cuid())
+  id            String       @id @default(cuid())
   name          String
   type          SourceType
   url           String
-  active        Boolean    @default(true)
-  lastCollected DateTime?  @map("last_collected")
-  createdAt     DateTime   @default(now()) @map("created_at")
-  updatedAt     DateTime   @updatedAt @map("updated_at")
+  active        Boolean      @default(true)
+  lastCollected DateTime?    @map("last_collected")
+  createdAt     DateTime     @default(now()) @map("created_at")
+  updatedAt     DateTime     @updatedAt @map("updated_at")
   articles      Article[]
+  userSources   UserSource[]
 
   @@map("sources")
 }
@@ -48,6 +86,7 @@ model Article {
   contentHash     String     @unique @map("content_hash")
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
+  bookmarks       Bookmark[]
 
   @@index([score])
   @@index([publishedAt])
@@ -58,13 +97,279 @@ model Article {
 
 model NotificationLog {
   id        String   @id @default(cuid())
-  type      String   // "digest", "breaking", "weekly"
+  type      String // "digest", "breaking", "weekly"
   recipient String
   content   String   @db.Text
   sentAt    DateTime @default(now()) @map("sent_at")
   success   Boolean  @default(true)
   error     String?
+  userId    String?  @map("user_id")
 
   @@index([sentAt])
   @@map("notification_logs")
+}
+
+// ─────────────────────────────────────────────
+// User & Preferences
+// ─────────────────────────────────────────────
+
+model User {
+  id          String   @id // Clerk user ID (e.g. user_xxx)
+  email       String   @unique
+  firstName   String?  @map("first_name")
+  lastName    String?  @map("last_name")
+  imageUrl    String?  @map("image_url")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  preferences              UserPreferences?
+  subscription             Subscription?
+  bookmarks                Bookmark[]
+  customAlerts             CustomAlert[]
+  organizationMemberships  OrganizationMember[]
+
+  @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  imageUrl  String?  @map("image_url")
+  ownerId   String   @map("owner_id")
+  plan      PlanSlug @default(free)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  members OrganizationMember[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String       @map("user_id")
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("member") // owner, admin, member
+  joinedAt       DateTime     @default(now()) @map("joined_at")
+
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model UserPreferences {
+  id                  String  @id @default(cuid())
+  userId              String  @unique @map("user_id")
+  user                User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Notification channels
+  whatsappNumber      String? @map("whatsapp_number")
+  telegramChatId      String? @map("telegram_chat_id")
+  emailNotifications  Boolean @default(true) @map("email_notifications")
+
+  // Digest settings
+  digestTime          String  @default("08:00") @map("digest_time") // HH:mm format
+  timezone            String  @default("Europe/Paris")
+  digestEnabled       Boolean @default(true) @map("digest_enabled")
+  weeklyDigestEnabled Boolean @default(true) @map("weekly_digest_enabled")
+
+  // Content preferences
+  minScoreAlert       Float   @default(7.0) @map("min_score_alert")
+  maxArticlesDigest   Int     @default(10) @map("max_articles_digest")
+  language            String  @default("fr") // preferred content language
+
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  categories UserCategory[]
+  sources    UserSource[]
+
+  @@map("user_preferences")
+}
+
+// ─────────────────────────────────────────────
+// Categories
+// ─────────────────────────────────────────────
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  nameFr      String   @map("name_fr")
+  nameAr      String?  @map("name_ar")
+  slug        String   @unique
+  description String?
+  icon        String? // Lucide icon name
+  keywords    String[] // keywords for filtering articles
+  isActive    Boolean  @default(true) @map("is_active")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  users UserCategory[]
+
+  @@map("categories")
+}
+
+model UserCategory {
+  id            String          @id @default(cuid())
+  preferencesId String          @map("preferences_id")
+  preferences   UserPreferences @relation(fields: [preferencesId], references: [id], onDelete: Cascade)
+  categoryId    String          @map("category_id")
+  category      Category        @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@unique([preferencesId, categoryId])
+  @@map("user_categories")
+}
+
+model UserSource {
+  id            String          @id @default(cuid())
+  preferencesId String          @map("preferences_id")
+  preferences   UserPreferences @relation(fields: [preferencesId], references: [id], onDelete: Cascade)
+  sourceId      String          @map("source_id")
+  source        Source          @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  @@unique([preferencesId, sourceId])
+  @@map("user_sources")
+}
+
+// ─────────────────────────────────────────────
+// Billing & Subscriptions
+// ─────────────────────────────────────────────
+
+model BillingPlan {
+  id            String   @id @default(cuid())
+  name          String
+  nameFr        String   @map("name_fr")
+  nameAr        String?  @map("name_ar")
+  slug          PlanSlug @unique
+  price         Float
+  yearlyPrice   Float?   @map("yearly_price")
+  currency      String   @default("USD")
+  features      Json // string array of feature descriptions
+  limits        Json // {max_sources, max_categories, max_alerts, channels, articles_per_day, api_requests_per_day}
+  isActive      Boolean  @default(true) @map("is_active")
+  sortOrder     Int      @default(0) @map("sort_order")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  subscriptions Subscription[]
+
+  @@map("billing_plans")
+}
+
+model Subscription {
+  id                      String             @id @default(cuid())
+  userId                  String             @unique @map("user_id")
+  user                    User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  billingPlanId           String             @map("billing_plan_id")
+  billingPlan             BillingPlan        @relation(fields: [billingPlanId], references: [id])
+  plan                    PlanSlug
+  status                  SubscriptionStatus @default(inactive)
+  billingCycle            BillingCycle       @default(monthly)
+  amount                  Float              @default(0)
+  currency                String             @default("USD")
+  paymentStatus           PaymentStatus      @default(unpaid) @map("payment_status")
+  startDate               DateTime           @default(now()) @map("start_date")
+  endDate                 DateTime?          @map("end_date")
+  nextBillingDate         DateTime?          @map("next_billing_date")
+  trialEndDate            DateTime?          @map("trial_end_date")
+  airwallexSubscriptionId String?            @map("airwallex_subscription_id")
+  airwallexCustomerId     String?            @map("airwallex_customer_id")
+  lastPaymentIntentId     String?            @map("last_payment_intent_id")
+  paymentMethodId         String?            @map("payment_method_id")
+  cancelAtPeriodEnd       Boolean            @default(false) @map("cancel_at_period_end")
+  cancellationReason      String?            @map("cancellation_reason")
+  createdAt               DateTime           @default(now()) @map("created_at")
+  updatedAt               DateTime           @updatedAt @map("updated_at")
+
+  invoices Invoice[]
+
+  @@map("subscriptions")
+}
+
+model Invoice {
+  id                       String       @id @default(cuid())
+  subscriptionId           String       @map("subscription_id")
+  subscription             Subscription @relation(fields: [subscriptionId], references: [id])
+  invoiceNumber            String       @unique @map("invoice_number")
+  amount                   Float
+  currency                 String       @default("USD")
+  status                   String       @default("pending") // pending, paid, cancelled, overdue
+  paymentStatus            String       @default("unpaid") @map("payment_status") // unpaid, paid, partial, authorized
+  airwallexPaymentIntentId String?      @map("airwallex_payment_intent_id")
+  periodStart              DateTime     @map("period_start")
+  periodEnd                DateTime     @map("period_end")
+  paidAt                   DateTime?    @map("paid_at")
+  createdAt                DateTime     @default(now()) @map("created_at")
+  updatedAt                DateTime     @updatedAt @map("updated_at")
+
+  @@index([subscriptionId])
+  @@map("invoices")
+}
+
+model PaymentMethod {
+  id                       String   @id @default(cuid())
+  userId                   String   @map("user_id")
+  airwallexPaymentMethodId String   @map("airwallex_payment_method_id")
+  type                     String   @default("card") // card, bank_transfer
+  last4                    String?
+  brand                    String? // visa, mastercard, amex
+  expMonth                 Int?     @map("exp_month")
+  expYear                  Int?     @map("exp_year")
+  billingName              String?  @map("billing_name")
+  isDefault                Boolean  @default(false) @map("is_default")
+  isActive                 Boolean  @default(true) @map("is_active")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("payment_methods")
+}
+
+model PaymentWebhookLog {
+  id               String    @id @default(cuid())
+  eventType        String    @map("event_type")
+  airwallexEventId String?   @unique @map("airwallex_event_id")
+  payload          Json
+  status           String    @default("processing") // processing, processed, failed
+  errorMessage     String?   @map("error_message")
+  processedAt      DateTime? @map("processed_at")
+  createdAt        DateTime  @default(now()) @map("created_at")
+
+  @@index([eventType])
+  @@map("payment_webhook_logs")
+}
+
+// ─────────────────────────────────────────────
+// User Content (Bookmarks & Alerts)
+// ─────────────────────────────────────────────
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String   @map("article_id")
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, articleId])
+  @@map("bookmarks")
+}
+
+model CustomAlert {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  keywords  String[]
+  channels  String[] // ["whatsapp", "email", "telegram"]
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("custom_alerts")
 }
