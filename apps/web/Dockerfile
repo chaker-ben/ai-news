@@ -17,7 +17,7 @@ COPY packages/utils/package.json packages/utils/
 COPY apps/web/package.json apps/web/
 
 # Filter workspace to only web-related packages
-RUN echo 'packages:\n  - "apps/web"\n  - "packages/*"' > pnpm-workspace.yaml
+RUN printf 'packages:\n  - "apps/web"\n  - "packages/*"\n' > pnpm-workspace.yaml
 
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
