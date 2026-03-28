@@ -76,9 +76,15 @@ model Article {
   sourceType      SourceType @map("source_type")
   originalTitle   String     @map("original_title")
   titleFr         String?    @map("title_fr")
+  titleEn         String?    @map("title_en")
+  titleAr         String?    @map("title_ar")
   originalContent String?    @map("original_content") @db.Text
   summaryFr       String?    @map("summary_fr") @db.Text
+  summaryEn       String?    @map("summary_en") @db.Text
+  summaryAr       String?    @map("summary_ar") @db.Text
   url             String
+  thumbnailUrl    String?    @map("thumbnail_url")
+  videoUrl        String?    @map("video_url")
   publishedAt     DateTime   @map("published_at")
   collectedAt     DateTime   @default(now()) @map("collected_at")
   score           Float      @default(0)
@@ -86,13 +92,28 @@ model Article {
   contentHash     String     @unique @map("content_hash")
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
-  bookmarks       Bookmark[]
+  bookmarks                Bookmark[]
+  userNotificationStatuses UserNotificationStatus[]
 
   @@index([score])
   @@index([publishedAt])
   @@index([notified])
   @@index([sourceType])
   @@map("articles")
+}
+
+model UserNotificationStatus {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId  String   @map("article_id")
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  notifiedAt DateTime @default(now()) @map("notified_at")
+  channel    String   @default("whatsapp")
+
+  @@unique([userId, articleId], map: "ix_user_notif_status_unique")
+  @@index([userId], map: "ix_user_notif_status_user")
+  @@map("user_notification_status")
 }
 
 model NotificationLog {
@@ -127,6 +148,7 @@ model User {
   bookmarks                Bookmark[]
   customAlerts             CustomAlert[]
   organizationMemberships  OrganizationMember[]
+  notificationStatuses     UserNotificationStatus[]
 
   @@map("users")
 }
