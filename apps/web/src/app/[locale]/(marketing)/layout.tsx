@@ -1,5 +1,7 @@
-import "@/styles/globals.css";
-
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
-  return <>{children}</>;
+  return (
+    <div className="dark" data-theme="dark">
+      {children}
+    </div>
+  );
 }
