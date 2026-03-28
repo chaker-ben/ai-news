@@ -1043,7 +1043,7 @@ export default function LandingPage() {
                                 : "rgba(59,130,246,0.1)",
                             padding: "0.1rem 0.4rem",
                             borderRadius: "var(--radius-sm)",
-                            writingDirection: "ltr",
+                            direction: "ltr",
                           }}
                         >
                           {item.score}/100
