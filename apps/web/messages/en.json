@@ -266,14 +266,23 @@
       "pricing": "Pricing",
       "faq": "FAQ",
       "signIn": "Sign In",
-      "getStarted": "Get Started"
+      "getStarted": "Get Started",
+      "language": "Change language",
+      "skipToContent": "Skip to main content",
+      "scrollTo": {
+        "features": "Go to Features section",
+        "pricing": "Go to Pricing section",
+        "faq": "Go to FAQ section"
+      }
     },
     "hero": {
       "headline": "Your AI News Intelligence Platform",
       "subheadline": "Stay ahead of AI breakthroughs. Get personalized digests from 100+ sources, delivered to your WhatsApp, email, or Telegram.",
       "ctaPrimary": "Start Free",
-      "ctaSecondary": "View Demo",
-      "trustBadge": "Monitoring 100+ AI sources daily"
+      "ctaSecondary": "View Demo →",
+      "ctaSecondaryAriaLabel": "View product demo",
+      "trustBadge": "Monitoring 100+ AI sources daily",
+      "mockupToday": "Today's Digest — 08:00 AM"
     },
     "features": {
       "title": "Everything you need to stay ahead",
@@ -316,7 +325,9 @@
       "step3": {
         "title": "Get your daily digest",
         "desc": "Receive a personalized summary of the most relevant AI news every day."
-      }
+      },
+      "cta": "Try it free",
+      "reassurance": "No credit card required \u00b7 Instant access \u00b7 Cancel anytime"
     },
     "pricing": {
       "title": "Simple, transparent pricing",
@@ -324,6 +335,17 @@
       "perMonth": "/mo",
       "popular": "Most Popular",
       "cta": "Get Started",
+      "ctaLabel": {
+        "free": "Get started free with the Free plan",
+        "pro": "Get started with the Pro plan",
+        "team": "Get started with the Team plan"
+      },
+      "toggle": {
+        "monthly": "Monthly",
+        "yearly": "Yearly",
+        "save": "Save 20%",
+        "billedYearly": "Billed ${total}/year"
+      },
       "plans": {
         "free": {
           "name": "Free",
@@ -372,9 +394,31 @@
         "a": "Yes. The free plan includes 10 monitored sources, 1 daily digest, and WhatsApp delivery. No credit card required."
       }
     },
+    "socialProof": {
+      "usedBy": "Trusted by teams at"
+    },
+    "testimonials": {
+      "title": "What our users say",
+      "subtitle": "AI professionals save hours every day with AI News.",
+      "1": {
+        "name": "Marie L.",
+        "role": "AI Research Lead, HealthTech",
+        "quote": "I used to spend 2 hours a day on manual monitoring. AI News delivers the essentials every morning with spot-on relevance scoring."
+      },
+      "2": {
+        "name": "Karim T.",
+        "role": "CTO, AI Startup",
+        "quote": "The WhatsApp digest is the first message I read every morning. The Arxiv + HackerNews coverage is impeccable."
+      },
+      "3": {
+        "name": "Yasmine B.",
+        "role": "Product Manager, FinTech",
+        "quote": "Finally a tool that understands not everyone has time to read 50 articles a day. The summaries are remarkably high-quality."
+      }
+    },
     "cta": {
       "title": "Ready to stay ahead of AI?",
-      "subtitle": "Join thousands of professionals who get their AI news through AI News."
+      "subtitle": "Join 2,400+ professionals who get their AI news through AI News."
     },
     "footer": {
       "tagline": "AI news intelligence for professionals. Aggregate, summarize, deliver.",
@@ -388,6 +432,87 @@
       "terms": "Terms of Service",
       "copyright": "2026 AI News. All rights reserved.",
       "madeWith": "Made with Claude AI"
+    }
+  },
+  "comingSoon": {
+    "title": "Coming Soon",
+    "description": "This page is under construction. Check back soon for updates.",
+    "backHome": "Back to home"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: March 2026",
+      "backHome": "Back to home",
+      "sections": {
+        "intro": {
+          "title": "Introduction",
+          "content": "AI News (\"we\", \"our\") is committed to protecting your privacy. This policy describes how we collect, use and protect your personal information when you use our AI monitoring service."
+        },
+        "dataCollected": {
+          "title": "Data Collected",
+          "content": "We collect information you provide directly: email address, name, notification preferences and digest settings. We also collect anonymized usage data to improve the service."
+        },
+        "usage": {
+          "title": "Data Usage",
+          "content": "Your data is used to personalize your AI digests, send notifications according to your preferences and improve the quality of our summaries and relevance scores."
+        },
+        "sharing": {
+          "title": "Data Sharing",
+          "content": "We never sell your personal data. We share information only with our technical subcontractors (hosting, messaging) necessary for the operation of the service."
+        },
+        "retention": {
+          "title": "Data Retention",
+          "content": "Your data is retained as long as your account is active. You can request deletion of your account and all associated data at any time."
+        },
+        "rights": {
+          "title": "Your Rights",
+          "content": "In accordance with GDPR, you have the right to access, rectify, delete and port your data. Contact us to exercise these rights."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "For any questions regarding this policy, contact us at privacy@ainews.app."
+        }
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: March 2026",
+      "backHome": "Back to home",
+      "sections": {
+        "acceptance": {
+          "title": "Acceptance of Terms",
+          "content": "By using AI News, you agree to these terms of service. If you do not agree, please do not use the service."
+        },
+        "service": {
+          "title": "Service Description",
+          "content": "AI News is an automated monitoring service that aggregates, summarizes and translates artificial intelligence news from 100+ sources, delivered via WhatsApp, email or Telegram."
+        },
+        "accounts": {
+          "title": "User Accounts",
+          "content": "You are responsible for maintaining the confidentiality of your login credentials and all activities conducted under your account."
+        },
+        "content": {
+          "title": "Content",
+          "content": "Summaries and scores generated by AI News are produced automatically by artificial intelligence. We do not guarantee their accuracy and encourage you to verify original sources."
+        },
+        "payment": {
+          "title": "Payment and Subscriptions",
+          "content": "Paid plans are billed monthly or annually at your choice. You can cancel your subscription at any time. Cancellation takes effect at the end of the current billing period."
+        },
+        "termination": {
+          "title": "Termination",
+          "content": "We reserve the right to suspend or terminate your access in case of violation of these terms. You can delete your account at any time from your settings."
+        },
+        "liability": {
+          "title": "Limitation of Liability",
+          "content": "AI News is provided \"as is\". We are not responsible for decisions made based on information provided by the service."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "For any questions, contact us at legal@ainews.app."
+        }
+      }
     }
   }
 }

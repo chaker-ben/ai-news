@@ -1,3 +1,4 @@
+import { ClerkProvider } from "@clerk/nextjs";
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -8,7 +9,10 @@ import { routing } from "@/i18n/routing";
 import "@/styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "AI News — Dashboard",
+  title: {
+    default: "AI News",
+    template: "AI News — %s",
+  },
   description: "AI news aggregation and monitoring dashboard",
 };
 
@@ -38,11 +42,13 @@ export default async function LocaleLayout({
             : "var(--font-sans)",
         }}
       >
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-          <NextIntlClientProvider messages={messages}>
-            {children}
-          </NextIntlClientProvider>
-        </ThemeProvider>
+        <ClerkProvider>
+          <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+            <NextIntlClientProvider messages={messages}>
+              {children}
+            </NextIntlClientProvider>
+          </ThemeProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

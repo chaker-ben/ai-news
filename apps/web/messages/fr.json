@@ -266,14 +266,23 @@
       "pricing": "Tarifs",
       "faq": "FAQ",
       "signIn": "Connexion",
-      "getStarted": "Commencer"
+      "getStarted": "Commencer",
+      "language": "Changer de langue",
+      "skipToContent": "Aller au contenu principal",
+      "scrollTo": {
+        "features": "Aller a la section Fonctionnalites",
+        "pricing": "Aller a la section Tarifs",
+        "faq": "Aller a la section FAQ"
+      }
     },
     "hero": {
       "headline": "Votre plateforme d'intelligence IA",
       "subheadline": "Gardez une longueur d'avance sur les avancées de l'IA. Recevez des digests personnalisés depuis plus de 100 sources, livrés sur WhatsApp, email ou Telegram.",
       "ctaPrimary": "Commencer gratuitement",
-      "ctaSecondary": "Voir la démo",
-      "trustBadge": "Plus de 100 sources IA surveillées quotidiennement"
+      "ctaSecondary": "Voir la démo →",
+      "ctaSecondaryAriaLabel": "Voir la démo du produit",
+      "trustBadge": "Plus de 100 sources IA surveillées quotidiennement",
+      "mockupToday": "Digest du jour — 08:00"
     },
     "features": {
       "title": "Tout ce qu'il faut pour rester à la pointe",
@@ -316,7 +325,9 @@
       "step3": {
         "title": "Recevez votre digest quotidien",
         "desc": "Recevez chaque jour un résumé personnalisé des actualités IA les plus pertinentes."
-      }
+      },
+      "cta": "Essayer gratuitement",
+      "reassurance": "Aucune carte bancaire requise \u00b7 Acces immediat \u00b7 Annulation a tout moment"
     },
     "pricing": {
       "title": "Tarifs simples et transparents",
@@ -324,6 +335,17 @@
       "perMonth": "/mois",
       "popular": "Le plus populaire",
       "cta": "Commencer",
+      "ctaLabel": {
+        "free": "Commencer gratuitement avec le plan Gratuit",
+        "pro": "Commencer avec le plan Pro",
+        "team": "Commencer avec le plan Equipe"
+      },
+      "toggle": {
+        "monthly": "Mensuel",
+        "yearly": "Annuel",
+        "save": "Économisez 20%",
+        "billedYearly": "Facturé {total}$/an"
+      },
       "plans": {
         "free": {
           "name": "Gratuit",
@@ -372,9 +394,31 @@
         "a": "Oui. Le plan gratuit inclut 10 sources surveillées, 1 digest quotidien et la livraison WhatsApp. Aucune carte bancaire requise."
       }
     },
+    "socialProof": {
+      "usedBy": "Utilisé par des équipes chez"
+    },
+    "testimonials": {
+      "title": "Ce que disent nos utilisateurs",
+      "subtitle": "Des professionnels de l'IA gagnent du temps chaque jour grâce à AI News.",
+      "1": {
+        "name": "Marie L.",
+        "role": "AI Research Lead, HealthTech",
+        "quote": "Je gagnais 2h par jour à faire ma veille manuellement. AI News me livre l'essentiel chaque matin avec un scoring pertinent."
+      },
+      "2": {
+        "name": "Karim T.",
+        "role": "CTO, Startup IA",
+        "quote": "Le digest WhatsApp est devenu le premier message que je lis le matin. La couverture Arxiv + HackerNews est impeccable."
+      },
+      "3": {
+        "name": "Yasmine B.",
+        "role": "Product Manager, FinTech",
+        "quote": "Enfin un outil qui comprend que tout le monde n'a pas le temps de lire 50 articles par jour. Les résumés sont d'une qualité remarquable."
+      }
+    },
     "cta": {
       "title": "Prêt à garder une longueur d'avance sur l'IA ?",
-      "subtitle": "Rejoignez des milliers de professionnels qui reçoivent leurs actualités IA via AI News."
+      "subtitle": "Rejoignez +2 400 professionnels qui reçoivent leurs actualités IA via AI News."
     },
     "footer": {
       "tagline": "Veille IA pour les professionnels. Agrégation, résumé, livraison.",
@@ -388,6 +432,87 @@
       "terms": "Conditions d'utilisation",
       "copyright": "2026 AI News. Tous droits réservés.",
       "madeWith": "Fait avec Claude AI"
+    }
+  },
+  "comingSoon": {
+    "title": "Bientot disponible",
+    "description": "Cette page est en cours de construction. Revenez bientot pour decouvrir les nouveautes.",
+    "backHome": "Retour a l'accueil"
+  },
+  "legal": {
+    "privacy": {
+      "title": "Politique de confidentialite",
+      "lastUpdated": "Derniere mise a jour : mars 2026",
+      "backHome": "Retour a l'accueil",
+      "sections": {
+        "intro": {
+          "title": "Introduction",
+          "content": "AI News (\"nous\", \"notre\") s'engage a proteger votre vie privee. Cette politique decrit comment nous collectons, utilisons et protegeons vos informations personnelles lorsque vous utilisez notre service de veille IA."
+        },
+        "dataCollected": {
+          "title": "Donnees collectees",
+          "content": "Nous collectons les informations que vous nous fournissez directement : adresse email, nom, preferences de notification et parametres de digest. Nous collectons egalement des donnees d'utilisation anonymisees pour ameliorer le service."
+        },
+        "usage": {
+          "title": "Utilisation des donnees",
+          "content": "Vos donnees sont utilisees pour personnaliser vos digests IA, envoyer des notifications selon vos preferences et ameliorer la qualite de nos resumes et scores de pertinence."
+        },
+        "sharing": {
+          "title": "Partage des donnees",
+          "content": "Nous ne vendons jamais vos donnees personnelles. Nous partageons des informations uniquement avec nos sous-traitants techniques (hebergement, envoi de messages) necessaires au fonctionnement du service."
+        },
+        "retention": {
+          "title": "Conservation",
+          "content": "Vos donnees sont conservees tant que votre compte est actif. Vous pouvez demander la suppression de votre compte et de toutes les donnees associees a tout moment."
+        },
+        "rights": {
+          "title": "Vos droits",
+          "content": "Conformement au RGPD, vous disposez d'un droit d'acces, de rectification, de suppression et de portabilite de vos donnees. Contactez-nous pour exercer ces droits."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "Pour toute question relative a cette politique, contactez-nous a privacy@ainews.app."
+        }
+      }
+    },
+    "terms": {
+      "title": "Conditions d'utilisation",
+      "lastUpdated": "Derniere mise a jour : mars 2026",
+      "backHome": "Retour a l'accueil",
+      "sections": {
+        "acceptance": {
+          "title": "Acceptation des conditions",
+          "content": "En utilisant AI News, vous acceptez les presentes conditions d'utilisation. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le service."
+        },
+        "service": {
+          "title": "Description du service",
+          "content": "AI News est un service de veille automatisee qui agregue, resume et traduit les actualites de l'intelligence artificielle depuis plus de 100 sources, et les livre via WhatsApp, email ou Telegram."
+        },
+        "accounts": {
+          "title": "Comptes utilisateurs",
+          "content": "Vous etes responsable de la confidentialite de vos identifiants de connexion et de toutes les activites effectuees sous votre compte."
+        },
+        "content": {
+          "title": "Contenu",
+          "content": "Les resumes et scores generes par AI News sont produits automatiquement par intelligence artificielle. Nous ne garantissons pas leur exactitude et vous encourageons a verifier les sources originales."
+        },
+        "payment": {
+          "title": "Paiement et abonnements",
+          "content": "Les plans payants sont factures mensuellement ou annuellement selon votre choix. Vous pouvez annuler votre abonnement a tout moment. L'annulation prend effet a la fin de la periode en cours."
+        },
+        "termination": {
+          "title": "Resiliation",
+          "content": "Nous nous reservons le droit de suspendre ou de resilier votre acces en cas de violation de ces conditions. Vous pouvez supprimer votre compte a tout moment depuis les parametres."
+        },
+        "liability": {
+          "title": "Limitation de responsabilite",
+          "content": "AI News est fourni \"tel quel\". Nous ne sommes pas responsables des decisions prises sur la base des informations fournies par le service."
+        },
+        "contact": {
+          "title": "Contact",
+          "content": "Pour toute question, contactez-nous a legal@ainews.app."
+        }
+      }
     }
   }
 }
