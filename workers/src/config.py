@@ -25,6 +25,13 @@ class Settings(BaseSettings):
     ultramsg_token: str = ""
     whatsapp_recipient: str = ""
 
+    # Email (Resend)
+    resend_api_key: str = ""
+    email_from: str = "AI News <notifications@ainews.app>"
+
+    # Telegram
+    telegram_bot_token: str = ""
+
     # Scheduler
     digest_time: str = "08:00"
     weekly_digest_day: str = "monday"

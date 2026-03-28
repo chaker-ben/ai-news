@@ -1,0 +1,36 @@
+{
+  "expo": {
+    "name": "AI News",
+    "slug": "ai-news",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "ainews",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#020617",
+      "resizeMode": "contain"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.ainews.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#020617"
+      },
+      "package": "com.ainews.app"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/notification-icon.png",
+          "color": "#3b82f6"
+        }
+      ]
+    ]
+  }
+}

@@ -3,27 +3,36 @@ import {
   FileText,
   Bell,
   Radio,
-  TrendingUp,
   ArrowUpRight,
+  TrendingUp,
+  TrendingDown,
 } from "lucide-react";
 import { getStats, getArticles } from "@/lib/api";
 import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
 import { Link } from "@/i18n/routing";
+import { ScoreBadgeServer } from "@/components/score-badge";
 
 function StatCard({
   label,
   value,
   icon: Icon,
   accent,
+  trend,
+  trendLabel,
 }: {
   label: string;
   value: number | string;
   icon: React.ComponentType<{ size?: number }>;
   accent?: string;
+  trend?: number | null;
+  trendLabel?: string;
 }) {
+  const hasTrend = trend !== undefined && trend !== null;
+  const isPositive = hasTrend && trend >= 0;
+
   return (
     <div
-      className="rounded-xl p-5"
+      className="rounded-xl p-4 sm:p-5"
       style={{
         background: "var(--bg-surface)",
         border: "1px solid var(--border-subtle)",
@@ -31,15 +40,38 @@ function StatCard({
     >
       <div className="flex items-center justify-between">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-lg"
+          className="flex h-9 w-9 items-center justify-center rounded-lg sm:h-10 sm:w-10"
           style={{ background: accent || "var(--bg-hover)" }}
         >
           <Icon size={20} />
         </div>
+        {hasTrend && (
+          <div
+            className="flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium"
+            style={{
+              color: isPositive
+                ? "var(--color-success, #22c55e)"
+                : "var(--color-error, #ef4444)",
+              background: isPositive
+                ? "rgb(34 197 94 / 0.1)"
+                : "rgb(239 68 68 / 0.1)",
+            }}
+          >
+            {isPositive ? (
+              <TrendingUp size={12} />
+            ) : (
+              <TrendingDown size={12} />
+            )}
+            <span className="ltr-nums">
+              {isPositive ? "+" : ""}
+              {trend}%
+            </span>
+          </div>
+        )}
       </div>
-      <div className="mt-4">
+      <div className="mt-3 sm:mt-4">
         <p
-          className="text-2xl font-bold"
+          className="text-xl font-bold sm:text-2xl"
           style={{ color: "var(--text-primary)" }}
         >
           {value}
@@ -47,26 +79,19 @@ function StatCard({
         <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
           {label}
         </p>
+        {hasTrend && trendLabel && (
+          <p
+            className="mt-0.5 text-xs"
+            style={{ color: "var(--text-muted)" }}
+          >
+            {trendLabel}
+          </p>
+        )}
       </div>
     </div>
   );
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  let color = "var(--color-neutral-500)";
-  if (score >= 9) color = "var(--color-error)";
-  else if (score >= 7) color = "var(--color-warning)";
-  else if (score >= 5) color = "var(--color-primary-500)";
-
-  return (
-    <span
-      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
-      style={{ color, border: `1px solid ${color}` }}
-    >
-      {score.toFixed(1)}
-    </span>
-  );
-}
 
 function SourceTypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {
@@ -129,22 +154,39 @@ export default async function DashboardPage({
           <p className="mt-1 text-sm" style={{ color: "var(--text-secondary)" }}>
             {t("todayDigest")}
           </p>
+          {stats?.updated_at && (
+            <p
+              className="mt-1 text-xs ltr-nums"
+              style={{ color: "var(--text-muted)" }}
+            >
+              {t("lastUpdated", {
+                time: new Date(stats.updated_at).toLocaleTimeString(intlLocale, {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
+              })}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Stats grid */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         <StatCard
           label={t("articlesCollected")}
           value={stats?.total_articles ?? "—"}
           icon={FileText}
           accent="rgb(59 130 246 / 0.15)"
+          trend={stats?.trends?.articles}
+          trendLabel={t("vsYesterday")}
         />
         <StatCard
           label={t("notificationsSent")}
           value={stats?.total_notifications ?? "—"}
           icon={Bell}
           accent="rgb(6 182 212 / 0.15)"
+          trend={stats?.trends?.notifications}
+          trendLabel={t("vsYesterday")}
         />
         <StatCard
           label={t("activeSources")}
@@ -153,10 +195,12 @@ export default async function DashboardPage({
           accent="rgb(16 185 129 / 0.15)"
         />
         <StatCard
-          label={t("notificationsSent")}
+          label={t("successfulDeliveries")}
           value={stats?.successful_notifications ?? "—"}
           icon={TrendingUp}
           accent="rgb(245 158 11 / 0.15)"
+          trend={stats?.trends?.successful}
+          trendLabel={t("vsYesterday")}
         />
       </div>
 
@@ -194,7 +238,7 @@ export default async function DashboardPage({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <SourceTypeBadge type={article.source_type} />
-                    <ScoreBadge score={article.score} />
+                    <ScoreBadgeServer score={article.score} />
                   </div>
                   <h3
                     className="mt-2 text-sm font-medium leading-snug group-hover:underline"

@@ -46,4 +46,11 @@ pnpm-debug.log*
 
 # Turbo
 .turbo/
+
+# Python
+__pycache__/
+*.pyc
 workers/.venv/
+
+# TypeScript
+*.tsbuildinfo

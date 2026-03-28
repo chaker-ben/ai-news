@@ -8,6 +8,7 @@ import {
   Trash2,
   Loader2,
 } from "lucide-react";
+import { ScoreBadge } from "@/components/score-badge";
 
 interface BookmarkItem {
   id: string;
@@ -27,29 +28,6 @@ interface BookmarkItem {
   };
 }
 
-function ScoreBadge({ score }: { score: number }) {
-  let color = "var(--color-neutral-500)";
-  let bg = "var(--bg-elevated)";
-  if (score >= 9) {
-    color = "var(--color-error)";
-    bg = "rgb(239 68 68 / 0.1)";
-  } else if (score >= 7) {
-    color = "var(--color-warning)";
-    bg = "rgb(245 158 11 / 0.1)";
-  } else if (score >= 5) {
-    color = "var(--color-primary-500)";
-    bg = "rgb(59 130 246 / 0.1)";
-  }
-
-  return (
-    <span
-      className="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold ltr-nums"
-      style={{ color, background: bg }}
-    >
-      {score.toFixed(1)}
-    </span>
-  );
-}
 
 function SourceTypeBadge({ type }: { type: string }) {
   const colors: Record<string, string> = {

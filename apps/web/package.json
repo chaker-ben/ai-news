@@ -21,9 +21,12 @@
     "@clerk/nextjs": "^6.0.0",
     "zod": "^3.23.0",
     "lucide-react": "^0.470.0",
+    "@ai-news/db": "workspace:*",
     "@ai-news/ui": "workspace:*",
     "@ai-news/types": "workspace:*",
-    "@ai-news/utils": "workspace:*"
+    "@ai-news/utils": "workspace:*",
+    "svix": "^1.42.0",
+    "airwallex-payment-elements": "^1.158.0"
   },
   "devDependencies": {
     "typescript": "^5.7.0",

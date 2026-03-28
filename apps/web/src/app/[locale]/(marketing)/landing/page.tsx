@@ -92,6 +92,7 @@ function useFadeIn(): (node: HTMLElement | null) => void {
 
 export default function LandingPage() {
   const t = useTranslations("landing");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const pathname = usePathname();
@@ -370,7 +371,7 @@ export default function LandingPage() {
                   color: "var(--text-primary)",
                 }}
               >
-                AI News
+                {tCommon("appName")}
               </span>
             </div>
 
@@ -939,7 +940,7 @@ export default function LandingPage() {
                           lineHeight: 1.2,
                         }}
                       >
-                        AI News Digest
+                        {t("hero.mockupDigestTitle")}
                       </div>
                       <div
                         style={{
@@ -961,35 +962,32 @@ export default function LandingPage() {
                         fontWeight: 500,
                       }}
                     >
-                      3 articles
+                      {t("hero.mockupArticlesCount")}
                     </div>
                   </div>
 
                   {/* Digest items */}
                   {[
                     {
-                      title: "GPT-5 Achieves PhD-Level Reasoning",
+                      title: t("hero.mockupArticle1Title"),
                       score: 97,
                       source: "Arxiv",
                       sourceColor: "#f59e0b",
-                      summary:
-                        "New architecture surpasses human experts on 12 graduate-level benchmarks.",
+                      summary: t("hero.mockupArticle1Summary"),
                     },
                     {
-                      title: "EU AI Act Enforcement Begins",
+                      title: t("hero.mockupArticle2Title"),
                       score: 94,
                       source: "Reuters",
                       sourceColor: "#10b981",
-                      summary:
-                        "First compliance deadline impacts foundation model providers across Europe.",
+                      summary: t("hero.mockupArticle2Summary"),
                     },
                     {
-                      title: "Open-Source Model Beats Claude on Code",
+                      title: t("hero.mockupArticle3Title"),
                       score: 91,
                       source: "HackerNews",
                       sourceColor: "#f97316",
-                      summary:
-                        "Community-built 70B model tops SWE-bench with novel training approach.",
+                      summary: t("hero.mockupArticle3Summary"),
                     },
                   ].map((item, i) => (
                     <div
@@ -2015,7 +2013,7 @@ export default function LandingPage() {
                     color: "var(--text-primary)",
                   }}
                 >
-                  AI News
+                  {tCommon("appName")}
                 </span>
               </div>
               <p

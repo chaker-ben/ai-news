@@ -2,6 +2,11 @@
   "name": "@ai-news/db",
   "version": "0.1.0",
   "private": true,
+  "main": "./index.ts",
+  "types": "./index.ts",
+  "exports": {
+    ".": "./index.ts"
+  },
   "scripts": {
     "db:generate": "prisma generate",
     "db:push": "prisma db push",

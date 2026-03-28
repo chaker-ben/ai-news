@@ -14,16 +14,18 @@ from workers.src.models.article import (
     Article,
     NotificationLog,
     Source,
+    User,
+    UserPreferences,
     get_session_factory,
     create_tables,
     get_db,
 )
-from workers.src.notifiers.whatsapp import send_digest
+from workers.src.notifiers.whatsapp import send_digest, send_digest_to_user
 from workers.src.processors.pipeline import process_unprocessed_articles
 from workers.src.scheduler.jobs import (
     run_collection_job,
-    run_digest_job,
-    run_weekly_digest_job,
+    run_digest_dispatcher,
+    run_weekly_digest_dispatcher,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,9 +56,6 @@ async def lifespan(app: FastAPI):
     finally:
         db.close()
 
-    # Parse digest time
-    digest_hour, digest_minute = settings.digest_time.split(":")
-
     # Schedule jobs
     scheduler.add_job(
         run_collection_job,
@@ -65,22 +64,22 @@ async def lifespan(app: FastAPI):
         id="collection",
         name="Collect articles from all sources",
     )
+    # Digest dispatcher — runs every 30 min, sends to users whose time matches
     scheduler.add_job(
-        run_digest_job,
-        "cron",
-        hour=int(digest_hour),
-        minute=int(digest_minute),
-        id="daily_digest",
-        name="Send daily WhatsApp digest",
+        run_digest_dispatcher,
+        "interval",
+        minutes=30,
+        id="digest_dispatcher",
+        name="Dispatch per-user daily digests",
     )
     scheduler.add_job(
-        run_weekly_digest_job,
+        run_weekly_digest_dispatcher,
         "cron",
         day_of_week="mon",
-        hour=9,
+        hour=6,  # Early UTC — dispatcher handles per-user timezones
         minute=0,
         id="weekly_digest",
-        name="Send weekly WhatsApp digest",
+        name="Dispatch per-user weekly digests",
     )
     scheduler.start()
     logger.info("Scheduler started with %d jobs", len(scheduler.get_jobs()))
@@ -257,9 +256,27 @@ async def reprocess_all_articles(db: DbSession):
 
 @app.post("/notify/digest")
 async def trigger_digest(db: DbSession):
-    """Trigger a manual digest send."""
+    """Trigger a manual digest send (legacy single-recipient)."""
     success = await send_digest(db, digest_type="quotidien")
     return {"status": "sent" if success else "no_articles_or_failed"}
+
+
+@app.post("/notify/digest/{user_id}")
+async def trigger_user_digest(user_id: str, db: DbSession):
+    """Trigger a manual digest send for a specific user."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        return {"error": "User not found"}, 404
+
+    prefs = db.query(UserPreferences).filter(UserPreferences.user_id == user_id).first()
+    if not prefs:
+        return {"error": "User has no preferences configured"}, 400
+
+    if not prefs.whatsapp_number:
+        return {"error": "User has no WhatsApp number configured"}, 400
+
+    success = await send_digest_to_user(db, user, prefs, digest_type="quotidien")
+    return {"status": "sent" if success else "no_articles_or_failed", "user_id": user_id}
 
 
 # ── Stats ──
@@ -267,7 +284,13 @@ async def trigger_digest(db: DbSession):
 
 @app.get("/stats")
 def get_stats(db: DbSession):
-    """Get collection and notification statistics."""
+    """Get collection and notification statistics with daily trends."""
+    from datetime import timedelta
+
+    now = datetime.utcnow()
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday_start = today_start - timedelta(days=1)
+
     total_articles = db.query(Article).count()
     notified_articles = db.query(Article).filter(Article.notified == True).count()  # noqa: E712
     active_sources = db.query(Source).filter(Source.active == True).count()  # noqa: E712
@@ -276,10 +299,55 @@ def get_stats(db: DbSession):
         db.query(NotificationLog).filter(NotificationLog.success == True).count()  # noqa: E712
     )
 
+    # Trend: today vs yesterday counts
+    articles_today = (
+        db.query(Article).filter(Article.collected_at >= today_start).count()
+    )
+    articles_yesterday = (
+        db.query(Article)
+        .filter(Article.collected_at >= yesterday_start, Article.collected_at < today_start)
+        .count()
+    )
+
+    notifs_today = (
+        db.query(NotificationLog).filter(NotificationLog.sent_at >= today_start).count()
+    )
+    notifs_yesterday = (
+        db.query(NotificationLog)
+        .filter(NotificationLog.sent_at >= yesterday_start, NotificationLog.sent_at < today_start)
+        .count()
+    )
+
+    successful_today = (
+        db.query(NotificationLog)
+        .filter(NotificationLog.sent_at >= today_start, NotificationLog.success == True)  # noqa: E712
+        .count()
+    )
+    successful_yesterday = (
+        db.query(NotificationLog)
+        .filter(
+            NotificationLog.sent_at >= yesterday_start,
+            NotificationLog.sent_at < today_start,
+            NotificationLog.success == True,  # noqa: E712
+        )
+        .count()
+    )
+
+    def calc_trend(today_val: int, yesterday_val: int) -> float | None:
+        if yesterday_val == 0:
+            return None
+        return round(((today_val - yesterday_val) / yesterday_val) * 100, 1)
+
     return {
         "total_articles": total_articles,
         "notified_articles": notified_articles,
         "active_sources": active_sources,
         "total_notifications": total_notifications,
         "successful_notifications": successful_notifications,
+        "trends": {
+            "articles": calc_trend(articles_today, articles_yesterday),
+            "notifications": calc_trend(notifs_today, notifs_yesterday),
+            "successful": calc_trend(successful_today, successful_yesterday),
+        },
+        "updated_at": now.isoformat(),
     }

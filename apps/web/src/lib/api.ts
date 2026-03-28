@@ -70,6 +70,14 @@ export const statsSchema = z.object({
   active_sources: z.number(),
   total_notifications: z.number(),
   successful_notifications: z.number(),
+  trends: z
+    .object({
+      articles: z.number().nullable(),
+      notifications: z.number().nullable(),
+      successful: z.number().nullable(),
+    })
+    .optional(),
+  updated_at: z.string().optional(),
 });
 
 // ── Types ──
@@ -171,5 +179,21 @@ export async function getAdjacentArticles(
     return { prev, next };
   } catch {
     return { prev: null, next: null };
+  }
+}
+
+export async function getSimilarArticles(
+  currentId: string,
+  sourceType: string,
+  limit = 3,
+): Promise<Article[]> {
+  try {
+    const { articles } = await getArticles({
+      source_type: sourceType,
+      limit: limit + 5,
+    });
+    return articles.filter((a) => a.id !== currentId).slice(0, limit);
+  } catch {
+    return [];
   }
 }
