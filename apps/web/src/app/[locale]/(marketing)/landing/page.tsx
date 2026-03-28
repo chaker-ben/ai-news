@@ -1271,21 +1271,6 @@ export default function LandingPage() {
             >
               {t("footer.copyright")}
             </p>
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.375rem",
-                padding: "0.25rem 0.75rem",
-                borderRadius: "var(--radius-full)",
-                border: "1px solid var(--border-subtle)",
-                fontSize: "var(--text-xs)",
-                color: "var(--text-muted)",
-              }}
-            >
-              <Sparkles size={12} style={{ color: "var(--color-primary-400)" }} />
-              {t("footer.madeWith")}
-            </div>
           </div>
         </footer>
       </div>
