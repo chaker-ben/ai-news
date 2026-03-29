@@ -29,6 +29,7 @@ export async function GET() {
     const dailyScores: Record<string, number[]> = {};
 
     for (const article of recentArticles) {
+      if (!article.publishedAt) continue;
       const day = article.publishedAt.toISOString().split("T")[0];
       dailyCounts[day] = (dailyCounts[day] || 0) + 1;
       if (!dailyScores[day]) dailyScores[day] = [];

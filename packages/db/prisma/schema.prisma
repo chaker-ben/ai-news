@@ -50,6 +50,23 @@ enum PaymentStatus {
   authorized
 }
 
+enum ChatRole {
+  user
+  assistant
+}
+
+enum ArticleStatus {
+  draft
+  pending_review
+  published
+  rejected
+}
+
+enum MediaType {
+  image
+  video
+}
+
 // ─────────────────────────────────────────────
 // Existing Models
 // ─────────────────────────────────────────────
@@ -70,35 +87,47 @@ model Source {
 }
 
 model Article {
-  id              String     @id @default(cuid())
-  sourceId        String     @map("source_id")
-  source          Source     @relation(fields: [sourceId], references: [id])
-  sourceType      SourceType @map("source_type")
-  originalTitle   String     @map("original_title")
-  titleFr         String?    @map("title_fr")
-  titleEn         String?    @map("title_en")
-  titleAr         String?    @map("title_ar")
-  originalContent String?    @map("original_content") @db.Text
-  summaryFr       String?    @map("summary_fr") @db.Text
-  summaryEn       String?    @map("summary_en") @db.Text
-  summaryAr       String?    @map("summary_ar") @db.Text
-  url             String
-  thumbnailUrl    String?    @map("thumbnail_url")
-  videoUrl        String?    @map("video_url")
-  publishedAt     DateTime   @map("published_at")
-  collectedAt     DateTime   @default(now()) @map("collected_at")
-  score           Float      @default(0)
-  notified        Boolean    @default(false)
-  contentHash     String     @unique @map("content_hash")
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
+  id              String        @id @default(cuid())
+  sourceId        String?       @map("source_id")
+  source          Source?       @relation(fields: [sourceId], references: [id])
+  sourceType      SourceType?   @map("source_type")
+  originalTitle   String        @map("original_title")
+  titleFr         String?       @map("title_fr")
+  titleEn         String?       @map("title_en")
+  titleAr         String?       @map("title_ar")
+  originalContent String?       @map("original_content") @db.Text
+  summaryFr       String?       @map("summary_fr") @db.Text
+  summaryEn       String?       @map("summary_en") @db.Text
+  summaryAr       String?       @map("summary_ar") @db.Text
+  url             String?
+  thumbnailUrl    String?       @map("thumbnail_url")
+  videoUrl        String?       @map("video_url")
+  publishedAt     DateTime?     @map("published_at")
+  collectedAt     DateTime      @default(now()) @map("collected_at")
+  score           Float         @default(0)
+  notified        Boolean       @default(false)
+  contentHash     String?       @unique @map("content_hash")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  // User-published article fields
+  authorId        String?       @map("author_id")
+  author          User?         @relation("ArticleAuthor", fields: [authorId], references: [id])
+  isUserGenerated Boolean       @default(false) @map("is_user_generated")
+  status          ArticleStatus @default(draft)
+  originalUrl     String?       @map("original_url")
+
   bookmarks                Bookmark[]
   userNotificationStatuses UserNotificationStatus[]
+  chatConversations        ChatConversation[]
+  media                    ArticleMedia[]
 
   @@index([score])
   @@index([publishedAt])
   @@index([notified])
   @@index([sourceType])
+  @@index([authorId])
+  @@index([status])
   @@map("articles")
 }
 
@@ -149,6 +178,9 @@ model User {
   customAlerts             CustomAlert[]
   organizationMemberships  OrganizationMember[]
   notificationStatuses     UserNotificationStatus[]
+  chatConversations        ChatConversation[]
+  aiCreditUsage            AiCreditUsage[]
+  publishedArticles        Article[]          @relation("ArticleAuthor")
 
   @@map("users")
 }
@@ -394,4 +426,74 @@ model CustomAlert {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("custom_alerts")
+}
+
+// ─────────────────────────────────────────────
+// AI Chat
+// ─────────────────────────────────────────────
+
+model ChatConversation {
+  id           String   @id @default(cuid())
+  userId       String   @map("user_id")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId    String   @map("article_id")
+  article      Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  title        String?
+  tokenCount   Int      @default(0) @map("token_count")
+  messageCount Int      @default(0) @map("message_count")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  messages ChatMessage[]
+
+  @@index([userId])
+  @@index([articleId])
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String           @id @default(cuid())
+  conversationId String           @map("conversation_id")
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           ChatRole
+  content        String           @db.Text
+  tokensUsed     Int              @default(0) @map("tokens_used")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  @@index([conversationId])
+  @@map("chat_messages")
+}
+
+model AiCreditUsage {
+  id             String   @id @default(cuid())
+  userId         String   @map("user_id")
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action         String // "chat", "summary", etc.
+  tokensUsed     Int      @map("tokens_used")
+  conversationId String?  @map("conversation_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@index([userId, createdAt])
+  @@map("ai_credit_usage")
+}
+
+// ─────────────────────────────────────────────
+// User-Published Articles
+// ─────────────────────────────────────────────
+
+model ArticleMedia {
+  id        String    @id @default(cuid())
+  articleId String    @map("article_id")
+  article   Article   @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  type      MediaType
+  url       String
+  key       String // S3/R2 storage key
+  size      Int // bytes
+  mimeType  String    @map("mime_type")
+  order     Int       @default(0)
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@index([articleId])
+  @@map("article_media")
 }

@@ -6,6 +6,8 @@ import { UserButton } from "@clerk/nextjs";
 import {
   LayoutDashboard,
   FileText,
+  FileEdit,
+  PenLine,
   Radio,
   Settings,
   Bell,
@@ -54,6 +56,8 @@ export default function DashboardLayout({
       items: [
         { key: "dashboard", href: "/", icon: LayoutDashboard },
         { key: "articles", href: "/articles", icon: FileText },
+        { key: "myArticles", href: "/articles/my", icon: FileEdit },
+        { key: "newArticle", href: "/articles/new", icon: PenLine },
         { key: "sources", href: "/sources", icon: Radio },
       ],
     },

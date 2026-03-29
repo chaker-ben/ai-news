@@ -1,103 +1,422 @@
-import { useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   StyleSheet,
-  Linking,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
-import Constants from "expo-constants";
-import { Globe, User, Zap, ExternalLink } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import {
+  Palette,
+  Globe,
+  Bell,
+  Sliders,
+  Layers,
+  User,
+  ExternalLink,
+  Check,
+  Mail,
+  MessageCircle,
+  Clock,
+  PenLine,
+  Star,
+} from "@/lib/icons";
+import { apiClient, type UserPreferences, type Category } from "@/lib/api";
 import { colors, spacing, radius, fontSize } from "@/lib/theme";
+import { SectionCard, SettingsRow, Separator } from "@/components/ui/SectionCard";
+import { ToggleSwitch } from "@/components/ui/ToggleSwitch";
+import { useLanguage } from "@/contexts/LanguageContext";
+import Constants from "expo-constants";
 
-const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || "http://localhost:3000";
+const DIGEST_TIMES = Array.from({ length: 17 }, (_, i) => {
+  const hour = i + 6;
+  return { label: `${String(hour).padStart(2, "0")}:00`, value: `${String(hour).padStart(2, "0")}:00` };
+});
 
-function SettingsRow({
-  icon,
-  label,
-  value,
-  onPress,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value?: string;
-  onPress?: () => void;
-}) {
-  return (
-    <TouchableOpacity
-      style={styles.row}
-      onPress={onPress}
-      disabled={!onPress}
-      accessibilityRole={onPress ? "button" : "text"}
-      accessibilityLabel={label}
-    >
-      <View style={styles.rowStart}>
-        {icon}
-        <Text style={styles.rowLabel}>{label}</Text>
-      </View>
-      {value ? <Text style={styles.rowValue}>{value}</Text> : null}
-    </TouchableOpacity>
-  );
-}
+const TIMEZONES = [
+  "UTC", "Europe/Paris", "Europe/London", "America/New_York",
+  "America/Los_Angeles", "America/Chicago", "Asia/Tokyo",
+  "Asia/Shanghai", "Asia/Dubai", "Asia/Riyadh", "Asia/Kolkata",
+  "Australia/Sydney", "Africa/Cairo", "Africa/Casablanca",
+];
 
 export default function SettingsScreen() {
-  const handleOpenWebSettings = useCallback(() => {
-    Linking.openURL(`${WEB_URL}/fr/settings`);
+  const { t } = useTranslation();
+  const router = useRouter();
+  const { language, setLanguage, languages } = useLanguage();
+  const [prefs, setPrefs] = useState<UserPreferences | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showDigestPicker, setShowDigestPicker] = useState(false);
+  const [showTimezonePicker, setShowTimezonePicker] = useState(false);
+
+  const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [digestEnabled, setDigestEnabled] = useState(true);
+  const [weeklyDigest, setWeeklyDigest] = useState(false);
+  const [digestTime, setDigestTime] = useState("08:00");
+  const [timezone, setTimezone] = useState("Europe/Paris");
+  const [minScore, setMinScore] = useState(5);
+  const [maxArticles, setMaxArticles] = useState(10);
+  const [selectedCategoryIds, setSelectedCategoryIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [prefsRes, catsRes] = await Promise.all([
+          apiClient.getPreferences().catch(() => null),
+          apiClient.getCategories().catch(() => ({ data: [] })),
+        ]);
+        if (prefsRes?.data) {
+          const p = prefsRes.data;
+          setPrefs(p);
+          setWhatsappNumber(p.whatsappNumber || "");
+          setEmailNotifications(p.emailNotifications);
+          setDigestEnabled(p.digestEnabled);
+          setWeeklyDigest(p.weeklyDigestEnabled);
+          setDigestTime(p.digestTime);
+          setTimezone(p.timezone);
+          setMinScore(p.minScoreAlert);
+          setMaxArticles(p.maxArticlesDigest);
+          setSelectedCategoryIds(p.selectedCategoryIds || []);
+        }
+        setCategories(catsRes.data);
+      } catch (error) {
+        console.error("Failed to load settings:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
   }, []);
 
-  const handleOpenWebSignIn = useCallback(() => {
-    Linking.openURL(`${WEB_URL}/fr/sign-in`);
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      await apiClient.updatePreferences({
+        whatsappNumber: whatsappNumber || null,
+        emailNotifications,
+        digestEnabled,
+        weeklyDigestEnabled: weeklyDigest,
+        digestTime,
+        timezone,
+        minScoreAlert: minScore,
+        maxArticlesDigest: maxArticles,
+        selectedCategoryIds,
+        language,
+      });
+      Alert.alert(t("settings.saved"));
+    } catch (error) {
+      console.error("Failed to save:", error);
+      Alert.alert(t("common.error"));
+    } finally {
+      setSaving(false);
+    }
+  }, [
+    whatsappNumber, emailNotifications, digestEnabled, weeklyDigest,
+    digestTime, timezone, minScore, maxArticles, selectedCategoryIds, language, t,
+  ]);
+
+  const toggleCategory = useCallback((id: string) => {
+    setSelectedCategoryIds((prev) =>
+      prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id],
+    );
   }, []);
 
   const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Profile placeholder */}
+      {/* Profile */}
       <View style={styles.profileCard}>
         <View style={styles.avatar}>
           <User size={28} color={colors.primary} />
         </View>
         <View style={styles.profileInfo}>
           <Text style={styles.profileName}>AI News</Text>
-          <Text style={styles.profileEmail}>Sign in via web for full access</Text>
+          <Text style={styles.profileEmail}>
+            {prefs ? prefs.language.toUpperCase() : "FR"}
+          </Text>
         </View>
       </View>
 
-      {/* Settings */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Account</Text>
-        <View style={styles.sectionCard}>
-          <SettingsRow
-            icon={<Globe size={18} color={colors.textSecondary} />}
-            label="Sign In (Web)"
-            value="Open browser"
-            onPress={handleOpenWebSignIn}
-          />
-          <View style={styles.separator} />
-          <SettingsRow
-            icon={<Zap size={18} color={colors.warning} />}
-            label="Full Settings"
-            value="Open browser"
-            onPress={handleOpenWebSettings}
+      {/* Appearance */}
+      <SectionCard title={t("settings.appearance")} icon={<Palette size={18} color={colors.primary} />}>
+        <SettingsRow
+          icon={<Globe size={16} color={colors.textSecondary} />}
+          label={t("settings.language")}
+        />
+        <View style={styles.langRow}>
+          {(Object.keys(languages) as Array<keyof typeof languages>).map((lang) => (
+            <TouchableOpacity
+              key={lang}
+              style={[styles.langButton, language === lang && styles.langButtonActive]}
+              onPress={() => setLanguage(lang)}
+            >
+              <Text
+                style={[
+                  styles.langButtonText,
+                  language === lang && styles.langButtonTextActive,
+                ]}
+              >
+                {languages[lang].nativeLabel}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </SectionCard>
+
+      {/* Notifications */}
+      <SectionCard title={t("settings.notifications")} icon={<Bell size={18} color={colors.success} />}>
+        <SettingsRow
+          icon={<MessageCircle size={16} color={colors.textSecondary} />}
+          label={t("settings.whatsappNumber")}
+        />
+        <View style={styles.inputRow}>
+          <TextInput
+            style={styles.input}
+            value={whatsappNumber}
+            onChangeText={setWhatsappNumber}
+            placeholder={t("settings.whatsappPlaceholder")}
+            placeholderTextColor={colors.textMuted}
+            keyboardType="phone-pad"
           />
         </View>
-      </View>
+        <Separator />
+        <SettingsRow
+          icon={<Mail size={16} color={colors.textSecondary} />}
+          label={t("settings.emailNotifications")}
+          right={<ToggleSwitch value={emailNotifications} onValueChange={setEmailNotifications} />}
+        />
+        <Separator />
+        <SettingsRow
+          icon={<Bell size={16} color={colors.textSecondary} />}
+          label={t("settings.digestEnabled")}
+          right={<ToggleSwitch value={digestEnabled} onValueChange={setDigestEnabled} />}
+        />
+        <Separator />
+        <SettingsRow
+          icon={<Bell size={16} color={colors.textSecondary} />}
+          label={t("settings.weeklyDigest")}
+          right={<ToggleSwitch value={weeklyDigest} onValueChange={setWeeklyDigest} />}
+        />
+        <Separator />
+        <TouchableOpacity onPress={() => setShowDigestPicker(!showDigestPicker)}>
+          <SettingsRow
+            icon={<Clock size={16} color={colors.textSecondary} />}
+            label={t("settings.digestTime")}
+            value={digestTime}
+          />
+        </TouchableOpacity>
+        {showDigestPicker ? (
+          <View style={styles.pickerGrid}>
+            {DIGEST_TIMES.map((dt) => (
+              <TouchableOpacity
+                key={dt.value}
+                style={[styles.pickerItem, digestTime === dt.value && styles.pickerItemActive]}
+                onPress={() => {
+                  setDigestTime(dt.value);
+                  setShowDigestPicker(false);
+                }}
+              >
+                <Text
+                  style={[
+                    styles.pickerItemText,
+                    digestTime === dt.value && styles.pickerItemTextActive,
+                    { writingDirection: "ltr" },
+                  ]}
+                >
+                  {dt.label}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
+        <Separator />
+        <TouchableOpacity onPress={() => setShowTimezonePicker(!showTimezonePicker)}>
+          <SettingsRow
+            icon={<Globe size={16} color={colors.textSecondary} />}
+            label={t("settings.timezone")}
+            value={timezone}
+          />
+        </TouchableOpacity>
+        {showTimezonePicker ? (
+          <View style={styles.pickerList}>
+            {TIMEZONES.map((tz) => (
+              <TouchableOpacity
+                key={tz}
+                style={[styles.pickerListItem, timezone === tz && styles.pickerItemActive]}
+                onPress={() => {
+                  setTimezone(tz);
+                  setShowTimezonePicker(false);
+                }}
+              >
+                <Text style={[styles.pickerItemText, timezone === tz && styles.pickerItemTextActive]}>
+                  {tz}
+                </Text>
+                {timezone === tz ? <Check size={16} color={colors.primary} /> : null}
+              </TouchableOpacity>
+            ))}
+          </View>
+        ) : null}
+      </SectionCard>
+
+      {/* Content Preferences */}
+      <SectionCard title={t("settings.contentPrefs")} icon={<Sliders size={18} color={colors.warning} />}>
+        <SettingsRow
+          icon={<Star size={16} color={colors.textSecondary} />}
+          label={t("settings.minScore")}
+          value={minScore.toFixed(1)}
+        />
+        <View style={styles.sliderRow}>
+          {[0, 2, 4, 5, 6, 7, 8].map((val) => (
+            <TouchableOpacity
+              key={val}
+              style={[styles.sliderDot, minScore === val && styles.sliderDotActive]}
+              onPress={() => setMinScore(val)}
+            >
+              <Text
+                style={[
+                  styles.sliderDotText,
+                  minScore === val && styles.sliderDotTextActive,
+                  { writingDirection: "ltr" },
+                ]}
+              >
+                {val}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <Separator />
+        <SettingsRow
+          icon={<Layers size={16} color={colors.textSecondary} />}
+          label={t("settings.maxArticles")}
+          value={String(maxArticles)}
+        />
+        <View style={styles.sliderRow}>
+          {[5, 10, 15, 20, 30, 50].map((val) => (
+            <TouchableOpacity
+              key={val}
+              style={[styles.sliderDot, maxArticles === val && styles.sliderDotActive]}
+              onPress={() => setMaxArticles(val)}
+            >
+              <Text
+                style={[
+                  styles.sliderDotText,
+                  maxArticles === val && styles.sliderDotTextActive,
+                  { writingDirection: "ltr" },
+                ]}
+              >
+                {val}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </SectionCard>
+
+      {/* Categories */}
+      {categories.length > 0 ? (
+        <SectionCard title={t("settings.categories")} icon={<Layers size={18} color={colors.purple} />}>
+          <View style={styles.categoryGrid}>
+            {categories.map((cat) => {
+              const selected = selectedCategoryIds.includes(cat.id);
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[styles.categoryChip, selected && styles.categoryChipActive]}
+                  onPress={() => toggleCategory(cat.id)}
+                >
+                  {selected ? <Check size={14} color={colors.primary} /> : null}
+                  <Text
+                    style={[styles.categoryChipText, selected && styles.categoryChipTextActive]}
+                  >
+                    {language === "ar" && cat.nameAr ? cat.nameAr : cat.nameFr}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </SectionCard>
+      ) : null}
+
+      {/* Navigation Links */}
+      <SectionCard>
+        <TouchableOpacity onPress={() => router.push("/my-articles")}>
+          <SettingsRow
+            icon={<PenLine size={16} color={colors.textSecondary} />}
+            label={t("publish.myArticles")}
+          />
+        </TouchableOpacity>
+        <Separator />
+        <TouchableOpacity onPress={() => router.push("/alerts")}>
+          <SettingsRow
+            icon={<Bell size={16} color={colors.textSecondary} />}
+            label={t("alerts.title")}
+          />
+        </TouchableOpacity>
+        <Separator />
+        <TouchableOpacity onPress={() => router.push("/sources")}>
+          <SettingsRow
+            icon={<Layers size={16} color={colors.textSecondary} />}
+            label={t("sources.title")}
+          />
+        </TouchableOpacity>
+        <Separator />
+        <TouchableOpacity onPress={() => router.push("/team")}>
+          <SettingsRow
+            icon={<User size={16} color={colors.textSecondary} />}
+            label={t("team.title")}
+          />
+        </TouchableOpacity>
+        <Separator />
+        <TouchableOpacity onPress={() => router.push("/pricing")}>
+          <SettingsRow
+            icon={<Star size={16} color={colors.textSecondary} />}
+            label={t("pricing.title")}
+          />
+        </TouchableOpacity>
+        <Separator />
+        <TouchableOpacity onPress={() => router.push("/notifications-config")}>
+          <SettingsRow
+            icon={<Bell size={16} color={colors.textSecondary} />}
+            label={t("notifications.title")}
+          />
+        </TouchableOpacity>
+      </SectionCard>
 
       {/* About */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>About</Text>
-        <View style={styles.sectionCard}>
-          <SettingsRow
-            icon={<ExternalLink size={18} color={colors.textSecondary} />}
-            label="Version"
-            value={`v${appVersion}`}
-          />
-        </View>
-      </View>
+      <SectionCard title={t("settings.about")} icon={<ExternalLink size={18} color={colors.textMuted} />}>
+        <SettingsRow label={t("common.version")} value={`v${appVersion}`} />
+      </SectionCard>
 
-      <Text style={styles.versionText}>AI News v{appVersion}</Text>
+      {/* Save Button */}
+      <TouchableOpacity
+        style={[styles.saveButton, saving && styles.saveButtonDisabled]}
+        onPress={handleSave}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.saveButtonText}>{t("common.save")}</Text>
+        )}
+      </TouchableOpacity>
+
+      <View style={{ height: 40 }} />
     </ScrollView>
   );
 }
@@ -105,6 +424,12 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { padding: spacing.lg },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: colors.background,
+  },
   profileCard: {
     backgroundColor: colors.surfaceLight,
     borderRadius: radius.lg,
@@ -127,38 +452,121 @@ const styles = StyleSheet.create({
   profileInfo: { flex: 1 },
   profileName: { color: colors.text, fontSize: fontSize.xl, fontWeight: "600" },
   profileEmail: { color: colors.textMuted, fontSize: fontSize.md, marginTop: 2 },
-  section: { marginBottom: spacing.xl },
-  sectionTitle: {
-    color: colors.textMuted,
-    fontSize: fontSize.sm,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-    marginBottom: spacing.sm,
-    marginStart: spacing.xs,
+  langRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
   },
-  sectionCard: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: radius.lg,
+  langButton: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,
-    overflow: "hidden",
-  },
-  row: {
-    flexDirection: "row",
     alignItems: "center",
+  },
+  langButtonActive: {
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}20`,
+  },
+  langButtonText: { color: colors.textSecondary, fontSize: fontSize.md, fontWeight: "500" },
+  langButtonTextActive: { color: colors.primary },
+  inputRow: { paddingHorizontal: spacing.lg, paddingBottom: spacing.md },
+  input: {
+    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    color: colors.text,
+    fontSize: fontSize.base,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pickerGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+  },
+  pickerItem: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  pickerItemActive: {
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}20`,
+  },
+  pickerItemText: { color: colors.textSecondary, fontSize: fontSize.sm },
+  pickerItemTextActive: { color: colors.primary },
+  pickerList: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    gap: spacing.xs,
+  },
+  pickerListItem: {
+    flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    padding: spacing.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  sliderRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.md,
+    justifyContent: "space-around",
+  },
+  sliderDot: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  sliderDotActive: {
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}20`,
+  },
+  sliderDotText: { color: colors.textMuted, fontSize: fontSize.sm },
+  sliderDotTextActive: { color: colors.primary, fontWeight: "600" },
+  categoryGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm,
     padding: spacing.lg,
   },
-  rowStart: { flexDirection: "row", alignItems: "center", gap: spacing.md },
-  rowLabel: { color: colors.text, fontSize: fontSize.base },
-  rowValue: { color: colors.textMuted, fontSize: fontSize.md },
-  separator: { height: 1, backgroundColor: colors.border, marginHorizontal: spacing.lg },
-  versionText: {
-    color: colors.textMuted,
-    fontSize: fontSize.sm,
-    textAlign: "center",
-    marginTop: spacing.sm,
-    marginBottom: spacing.xxl,
+  categoryChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: radius.full,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
+  categoryChipActive: {
+    borderColor: colors.primary,
+    backgroundColor: `${colors.primary}20`,
+  },
+  categoryChipText: { color: colors.textSecondary, fontSize: fontSize.sm },
+  categoryChipTextActive: { color: colors.primary },
+  saveButton: {
+    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
+    alignItems: "center",
+    marginTop: spacing.md,
+  },
+  saveButtonDisabled: { opacity: 0.6 },
+  saveButtonText: { color: "#fff", fontSize: fontSize.xl, fontWeight: "600" },
 });

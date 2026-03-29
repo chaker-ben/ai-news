@@ -27,7 +27,9 @@
     "stats": "الإحصائيات",
     "analytics": "التحليلات",
     "team": "الفريق",
-    "pricing": "الأسعار"
+    "pricing": "الأسعار",
+    "myArticles": "مقالاتي",
+    "newArticle": "مقال جديد"
   },
   "auth": {
     "signIn": "تسجيل الدخول",
@@ -571,5 +573,51 @@
         }
       }
     }
+  },
+  "chat": {
+    "title": "محادثة مع الذكاء الاصطناعي",
+    "openChat": "محادثة حول هذا المقال",
+    "close": "إغلاق المحادثة",
+    "loading": "جاري تحميل المحادثة...",
+    "retry": "إعادة المحاولة",
+    "emptyState": "اطرح أي سؤال حول هذا المقال",
+    "inputPlaceholder": "اطرح سؤالاً...",
+    "send": "إرسال الرسالة",
+    "creditsRemaining": "{count} رسائل متبقية اليوم",
+    "upgradeTitle": "ترقية للمحادثة",
+    "upgradeDescription": "محادثة الذكاء الاصطناعي متاحة في خطط Pro و Team",
+    "upgradeCta": "عرض الخطط"
+  },
+  "publish": {
+    "myArticles": "مقالاتي",
+    "myArticlesCount": "{count} مقالات",
+    "writeNew": "كتابة",
+    "writeFirst": "اكتب مقالك الأول",
+    "newArticle": "مقال جديد",
+    "titlePlaceholder": "عنوان المقال...",
+    "contentPlaceholder": "اكتب محتوى مقالك هنا...",
+    "originalUrl": "الرابط الأصلي (اختياري)",
+    "language": "اللغة",
+    "images": "الصور",
+    "dropImages": "اسحب الصور هنا أو انقر للتحميل",
+    "noImages": "لم يتم تحميل أي صور",
+    "saveDraft": "حفظ المسودة",
+    "submitForReview": "تقديم للمراجعة",
+    "lastSaved": "تم الحفظ في {time}",
+    "titleRequiredForUpload": "أدخل عنواناً قبل تحميل الصور",
+    "submittedTitle": "تم تقديم المقال",
+    "submittedDescription": "تم تقديم مقالك للمراجعة. سيتم إشعارك عند نشره.",
+    "viewMyArticles": "عرض مقالاتي",
+    "tab_all": "الكل",
+    "tab_draft": "المسودات",
+    "tab_pending": "قيد المراجعة",
+    "tab_published": "المنشورة",
+    "status_draft": "مسودة",
+    "status_pending": "قيد المراجعة",
+    "status_published": "منشور",
+    "status_rejected": "مرفوض",
+    "mediaCount": "{count} صور",
+    "emptyTitle": "لا توجد مقالات",
+    "emptyDescription": "ابدأ الكتابة لمشاركة أفكارك مع المجتمع"
   }
 }

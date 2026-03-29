@@ -12,6 +12,7 @@ import { Link } from "@/i18n/routing";
 import { ArticleReader } from "@/components/article-reader";
 import { ArticleNavigation } from "@/components/article-navigation";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { ChatButton } from "@/components/chat/chat-button";
 import { ScoreBadgeServer } from "@/components/score-badge";
 import { ReadingProgressBar } from "@/components/reading-progress-bar";
 import { CopyLinkButton, MarkAsReadButton } from "@/components/article-actions";
@@ -103,6 +104,7 @@ export default async function ArticleDetailPage({
           </Link>
 
           <div className="flex items-center gap-2">
+            <ChatButton articleId={article.id} articleTitle={localized.title} />
             <BookmarkButton articleId={article.id} />
           </div>
         </div>

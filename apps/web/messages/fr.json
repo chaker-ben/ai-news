@@ -27,7 +27,9 @@
     "stats": "Statistiques",
     "analytics": "Analyses",
     "team": "\u00c9quipe",
-    "pricing": "Tarifs"
+    "pricing": "Tarifs",
+    "myArticles": "Mes articles",
+    "newArticle": "Nouvel article"
   },
   "auth": {
     "signIn": "Se connecter",
@@ -571,5 +573,51 @@
         }
       }
     }
+  },
+  "chat": {
+    "title": "Chat avec l'IA",
+    "openChat": "Discuter de cet article",
+    "close": "Fermer le chat",
+    "loading": "Chargement de la conversation...",
+    "retry": "R\u00e9essayer",
+    "emptyState": "Posez une question sur cet article",
+    "inputPlaceholder": "Posez une question...",
+    "send": "Envoyer le message",
+    "creditsRemaining": "{count} messages restants aujourd'hui",
+    "upgradeTitle": "Passez au plan sup\u00e9rieur pour chatter",
+    "upgradeDescription": "Le chat IA est disponible sur les plans Pro et \u00c9quipe",
+    "upgradeCta": "Voir les plans"
+  },
+  "publish": {
+    "myArticles": "Mes articles",
+    "myArticlesCount": "{count} articles",
+    "writeNew": "\u00c9crire",
+    "writeFirst": "\u00c9crivez votre premier article",
+    "newArticle": "Nouvel article",
+    "titlePlaceholder": "Titre de l'article...",
+    "contentPlaceholder": "R\u00e9digez le contenu de votre article ici...",
+    "originalUrl": "URL originale (optionnel)",
+    "language": "Langue",
+    "images": "Images",
+    "dropImages": "D\u00e9posez des images ici ou cliquez pour t\u00e9l\u00e9charger",
+    "noImages": "Aucune image t\u00e9l\u00e9charg\u00e9e",
+    "saveDraft": "Enregistrer le brouillon",
+    "submitForReview": "Soumettre pour relecture",
+    "lastSaved": "Enregistr\u00e9 \u00e0 {time}",
+    "titleRequiredForUpload": "Entrez un titre avant de t\u00e9l\u00e9charger des images",
+    "submittedTitle": "Article soumis",
+    "submittedDescription": "Votre article a \u00e9t\u00e9 soumis pour relecture. Vous serez notifi\u00e9 une fois publi\u00e9.",
+    "viewMyArticles": "Voir mes articles",
+    "tab_all": "Tous",
+    "tab_draft": "Brouillons",
+    "tab_pending": "En attente",
+    "tab_published": "Publi\u00e9s",
+    "status_draft": "Brouillon",
+    "status_pending": "En relecture",
+    "status_published": "Publi\u00e9",
+    "status_rejected": "Refus\u00e9",
+    "mediaCount": "{count} images",
+    "emptyTitle": "Aucun article",
+    "emptyDescription": "Commencez \u00e0 \u00e9crire pour partager vos id\u00e9es avec la communaut\u00e9"
   }
 }

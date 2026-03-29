@@ -27,7 +27,9 @@
     "stats": "Statistics",
     "analytics": "Analytics",
     "team": "Team",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "myArticles": "My Articles",
+    "newArticle": "New Article"
   },
   "auth": {
     "signIn": "Sign in",
@@ -571,5 +573,51 @@
         }
       }
     }
+  },
+  "chat": {
+    "title": "Chat with AI",
+    "openChat": "Chat about this article",
+    "close": "Close chat",
+    "loading": "Loading conversation...",
+    "retry": "Retry",
+    "emptyState": "Ask anything about this article",
+    "inputPlaceholder": "Ask a question...",
+    "send": "Send message",
+    "creditsRemaining": "{count} messages remaining today",
+    "upgradeTitle": "Upgrade to chat",
+    "upgradeDescription": "AI chat is available on Pro and Team plans",
+    "upgradeCta": "View Plans"
+  },
+  "publish": {
+    "myArticles": "My Articles",
+    "myArticlesCount": "{count} articles",
+    "writeNew": "Write new",
+    "writeFirst": "Write your first article",
+    "newArticle": "New Article",
+    "titlePlaceholder": "Article title...",
+    "contentPlaceholder": "Write your article content here...",
+    "originalUrl": "Original URL (optional)",
+    "language": "Language",
+    "images": "Images",
+    "dropImages": "Drop images here or click to upload",
+    "noImages": "No images uploaded",
+    "saveDraft": "Save draft",
+    "submitForReview": "Submit for review",
+    "lastSaved": "Saved at {time}",
+    "titleRequiredForUpload": "Enter a title before uploading images",
+    "submittedTitle": "Article submitted",
+    "submittedDescription": "Your article has been submitted for review. You will be notified once it is published.",
+    "viewMyArticles": "View my articles",
+    "tab_all": "All",
+    "tab_draft": "Drafts",
+    "tab_pending": "Pending",
+    "tab_published": "Published",
+    "status_draft": "Draft",
+    "status_pending": "Pending review",
+    "status_published": "Published",
+    "status_rejected": "Rejected",
+    "mediaCount": "{count} images",
+    "emptyTitle": "No articles yet",
+    "emptyDescription": "Start writing to share your insights with the community"
   }
 }

@@ -9,7 +9,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string().default("/sign-in"),
   NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().default("/sign-up"),
   CLERK_WEBHOOK_SECRET: z.string().min(1).optional(),
-  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  ANTHROPIC_API_KEY: z.string().min(1),
   SENTRY_DSN: z.string().url().optional(),
   AIRWALLEX_API_KEY: z.string().min(1).optional(),
   AIRWALLEX_CLIENT_ID: z.string().min(1).optional(),
@@ -17,6 +17,12 @@ const envSchema = z.object({
   NEXT_PUBLIC_AIRWALLEX_ENV: z.enum(["demo", "prod"]).default("demo"),
   NEXT_PUBLIC_AIRWALLEX_CLIENT_ID: z.string().optional(),
   AIRWALLEX_BASE_URL: z.string().url().default("https://api-demo.airwallex.com"),
+  // R2/S3 Storage
+  R2_ACCOUNT_ID: z.string().min(1).optional(),
+  R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+  R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  R2_BUCKET_NAME: z.string().min(1).default("ai-news-media"),
+  R2_PUBLIC_URL: z.string().url().optional(),
 });
 
 export const env = envSchema.parse(process.env);
