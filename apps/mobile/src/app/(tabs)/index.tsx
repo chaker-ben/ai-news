@@ -2,120 +2,40 @@ import { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
-  FlatList,
+  ScrollView,
   TouchableOpacity,
   RefreshControl,
-  Linking,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { Bookmark as BookmarkIcon, ExternalLink } from "lucide-react-native";
-import { apiClient, Article } from "@/lib/api";
+import { useTranslation } from "react-i18next";
+import { FileText, Bell, Radio, TrendingUp } from "@/lib/icons";
+import { apiClient, type Article, type AnalyticsData } from "@/lib/api";
 import { colors, spacing, radius, fontSize } from "@/lib/theme";
+import { StatCard } from "@/components/ui/StatCard";
+import { ScoreBadge } from "@/components/ui/ScoreBadge";
+import { SourceBadge } from "@/components/ui/SourceBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
-function ScoreBadge({ score }: { score: number }) {
-  let color: string = colors.textMuted;
-  if (score >= 9) color = colors.error;
-  else if (score >= 7) color = colors.warning;
-  else if (score >= 5) color = colors.primary;
-
-  return (
-    <View style={[styles.badge, { borderColor: color }]}>
-      <Text style={[styles.badgeText, { color }]}>{score.toFixed(1)}</Text>
-    </View>
-  );
-}
-
-function SourceBadge({ type }: { type: string }) {
-  const sourceColors: Record<string, string> = {
-    blog: colors.primary,
-    twitter: colors.info,
-    youtube: colors.error,
-    reddit: colors.warning,
-    arxiv: colors.purple,
-  };
-  const color = sourceColors[type] || colors.textMuted;
-
-  return (
-    <View style={[styles.sourceBadge, { backgroundColor: `${color}20` }]}>
-      <Text style={[styles.sourceBadgeText, { color }]}>{type}</Text>
-    </View>
-  );
-}
-
-function ArticleCard({
-  article,
-  onBookmark,
-  onPress,
-}: {
-  article: Article;
-  onBookmark: (id: string) => void;
-  onPress: (id: string) => void;
-}) {
-  const handleOpenUrl = useCallback(() => {
-    Linking.openURL(article.url);
-  }, [article.url]);
-
-  const handleBookmark = useCallback(() => {
-    onBookmark(article.id);
-  }, [article.id, onBookmark]);
-
-  return (
-    <TouchableOpacity style={styles.card} onPress={() => onPress(article.id)} activeOpacity={0.7}>
-      <View style={styles.cardHeader}>
-        <SourceBadge type={article.source_type} />
-        <ScoreBadge score={article.score} />
-      </View>
-      <Text style={styles.cardTitle}>{article.title}</Text>
-      {article.summary ? (
-        <Text style={styles.cardSummary} numberOfLines={3}>
-          {article.summary}
-        </Text>
-      ) : null}
-      {article.published_at ? (
-        <Text style={styles.cardDate}>
-          {new Intl.DateTimeFormat("fr-FR", {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          }).format(new Date(article.published_at))}
-        </Text>
-      ) : null}
-      <View style={styles.cardActions}>
-        <TouchableOpacity
-          onPress={handleOpenUrl}
-          style={styles.actionButton}
-          accessibilityLabel="Open article"
-          accessibilityRole="link"
-        >
-          <ExternalLink size={16} color={colors.textMuted} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          onPress={handleBookmark}
-          style={styles.actionButton}
-          accessibilityLabel="Bookmark article"
-          accessibilityRole="button"
-        >
-          <BookmarkIcon size={16} color={colors.textMuted} />
-        </TouchableOpacity>
-      </View>
-    </TouchableOpacity>
-  );
-}
-
-export default function ArticlesScreen() {
+export default function DashboardScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
+  const [stats, setStats] = useState<AnalyticsData | null>(null);
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchArticles = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     try {
-      const data = await apiClient.getArticles({ limit: 30 });
-      setArticles(data.articles);
+      const [statsData, articlesData] = await Promise.all([
+        apiClient.getAnalytics().catch(() => null),
+        apiClient.getArticles({ limit: 5, min_score: 0 }).catch(() => ({ articles: [], total: 0 })),
+      ]);
+      if (statsData) setStats(statsData);
+      setArticles(articlesData.articles);
     } catch (error) {
-      console.error("Failed to fetch articles:", error);
+      console.error("Dashboard fetch error:", error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -123,25 +43,13 @@ export default function ArticlesScreen() {
   }, []);
 
   useEffect(() => {
-    fetchArticles();
-  }, [fetchArticles]);
+    fetchData();
+  }, [fetchData]);
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchArticles();
-  }, [fetchArticles]);
-
-  const handlePress = useCallback((articleId: string) => {
-    router.push(`/article/${articleId}`);
-  }, [router]);
-
-  const handleBookmark = useCallback(async (articleId: string) => {
-    try {
-      await apiClient.addBookmark(articleId);
-    } catch {
-      // Already bookmarked or error — silent fail for now
-    }
-  }, []);
+    fetchData();
+  }, [fetchData]);
 
   if (loading) {
     return (
@@ -151,13 +59,12 @@ export default function ArticlesScreen() {
     );
   }
 
+  const sourceCount = stats ? Object.keys(stats.sourceDistribution).length : 0;
+
   return (
-    <FlatList
-      data={articles}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <ArticleCard article={item} onBookmark={handleBookmark} onPress={handlePress} />
-      )}
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
       refreshControl={
         <RefreshControl
           refreshing={refreshing}
@@ -165,104 +72,147 @@ export default function ArticlesScreen() {
           tintColor={colors.primary}
         />
       }
-      contentContainerStyle={styles.list}
-      style={styles.container}
-      ListEmptyComponent={
-        <View style={styles.empty}>
-          <Text style={styles.emptyText}>No articles yet</Text>
-          <Text style={styles.emptySubtext}>Pull to refresh</Text>
+    >
+      {/* Stats Grid */}
+      <View style={styles.statsGrid}>
+        <StatCard
+          icon={<FileText size={18} color={colors.primary} />}
+          label={t("home.articlesCollected")}
+          value={stats ? new Intl.NumberFormat("en-US").format(stats.totalArticles) : "0"}
+          color={colors.primary}
+        />
+        <StatCard
+          icon={<Bell size={18} color={colors.success} />}
+          label={t("home.notificationsSent")}
+          value={stats ? String(stats.articlesToday) : "0"}
+          color={colors.success}
+        />
+        <StatCard
+          icon={<Radio size={18} color={colors.purple} />}
+          label={t("home.activeSources")}
+          value={String(sourceCount)}
+          color={colors.purple}
+        />
+        <StatCard
+          icon={<TrendingUp size={18} color={colors.warning} />}
+          label={t("analytics.avgScore")}
+          value={stats ? stats.averageScore.toFixed(1) : "0"}
+          color={colors.warning}
+        />
+      </View>
+
+      {/* Top Articles */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>{t("home.topArticles")}</Text>
+          <TouchableOpacity onPress={() => router.push("/(tabs)/articles")}>
+            <Text style={styles.seeAll}>{t("articles.all")}</Text>
+          </TouchableOpacity>
         </View>
-      }
-    />
+
+        {articles.length === 0 ? (
+          <EmptyState
+            icon={<FileText size={48} color={colors.textMuted} />}
+            title={t("home.noArticles")}
+            description={t("home.noArticlesDesc")}
+          />
+        ) : (
+          articles.map((article) => (
+            <TouchableOpacity
+              key={article.id}
+              style={styles.articleRow}
+              onPress={() => router.push(`/article/${article.id}`)}
+              activeOpacity={0.7}
+            >
+              <View style={styles.articleMeta}>
+                <SourceBadge type={article.source_type} />
+                <ScoreBadge score={article.score} />
+              </View>
+              <Text style={styles.articleTitle} numberOfLines={2}>
+                {article.title}
+              </Text>
+              {article.summary ? (
+                <Text style={styles.articleSummary} numberOfLines={2}>
+                  {article.summary}
+                </Text>
+              ) : null}
+              {article.published_at ? (
+                <Text style={[styles.articleDate, { writingDirection: "ltr" }]}>
+                  {new Intl.DateTimeFormat("fr-FR", {
+                    day: "numeric",
+                    month: "short",
+                  }).format(new Date(article.published_at))}
+                </Text>
+              ) : null}
+            </TouchableOpacity>
+          ))
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  list: {
-    padding: spacing.lg,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: spacing.lg },
   center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: colors.background,
   },
-  card: {
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+  },
+  section: { marginBottom: spacing.xl },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
+  sectionTitle: {
+    color: colors.text,
+    fontSize: fontSize.xl,
+    fontWeight: "600",
+  },
+  seeAll: {
+    color: colors.primary,
+    fontSize: fontSize.md,
+    fontWeight: "500",
+  },
+  articleRow: {
     backgroundColor: colors.surfaceLight,
     borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
   },
-  cardHeader: {
+  articleMeta: {
     flexDirection: "row",
     alignItems: "center",
     gap: spacing.sm,
     marginBottom: spacing.sm,
   },
-  cardTitle: {
+  articleTitle: {
     color: colors.text,
-    fontSize: fontSize.lg,
+    fontSize: fontSize.base,
     fontWeight: "600",
-    lineHeight: 22,
-  },
-  cardSummary: {
-    color: colors.textSecondary,
-    fontSize: fontSize.md,
     lineHeight: 20,
-    marginTop: spacing.xs + 2,
   },
-  cardDate: {
-    color: colors.textMuted,
-    fontSize: fontSize.sm,
-    marginTop: spacing.sm,
-  },
-  cardActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  actionButton: {
-    padding: spacing.sm,
-    borderRadius: radius.md,
-  },
-  badge: {
-    borderWidth: 1,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: fontSize.xs,
-    fontWeight: "600",
-  },
-  sourceBadge: {
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-  },
-  sourceBadgeText: {
-    fontSize: fontSize.xs,
-    fontWeight: "500",
-  },
-  empty: {
-    alignItems: "center",
-    paddingTop: 80,
-  },
-  emptyText: {
+  articleSummary: {
     color: colors.textSecondary,
-    fontSize: fontSize.xl,
-    fontWeight: "500",
+    fontSize: fontSize.sm,
+    lineHeight: 18,
+    marginTop: spacing.xs,
   },
-  emptySubtext: {
+  articleDate: {
     color: colors.textMuted,
-    fontSize: fontSize.md,
+    fontSize: fontSize.xs,
     marginTop: spacing.xs,
   },
 });

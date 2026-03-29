@@ -369,6 +369,14 @@
       "analytics": {
         "name": "Analytics Dashboard",
         "desc": "Track trends, relevance scores, and source performance over time."
+      },
+      "aiChat": {
+        "name": "AI Article Chat",
+        "desc": "Chat with AI about any article. Ask questions, get insights, and dive deeper into the content."
+      },
+      "publishing": {
+        "name": "Publish Articles",
+        "desc": "Write and publish your own articles with images and videos. Share your expertise with the community."
       }
     },
     "howItWorks": {
@@ -417,6 +425,8 @@
           "featureSourcesUnlimited": "Unlimited sources",
           "featureDigest3": "3 daily digests",
           "featureAllChannels": "All delivery channels",
+          "featureAiChat": "AI Chat (50 msgs/day)",
+          "featurePublish": "Publish articles (5/mo)",
           "featureAlerts": "Smart keyword alerts",
           "featureAnalytics": "Full analytics dashboard"
         },
@@ -424,6 +434,8 @@
           "name": "Team",
           "featureEverythingPro": "Everything in Pro",
           "featureMembers5": "Up to 5 team members",
+          "featureAiChatTeam": "AI Chat (200 msgs/day)",
+          "featurePublishTeam": "Publish articles (20/mo)",
           "featureSharedDigests": "Shared digests & reports",
           "featurePrioritySupport": "Priority support",
           "featureApi": "API access"

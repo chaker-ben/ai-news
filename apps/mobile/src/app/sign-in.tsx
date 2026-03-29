@@ -1,21 +1,23 @@
-import { View, Text, TouchableOpacity, StyleSheet, Linking, I18nManager } from "react-native";
-import { Zap, ExternalLink } from "lucide-react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Linking } from "react-native";
+import { useTranslation } from "react-i18next";
+import { Zap, ExternalLink } from "@/lib/icons";
 import { colors, spacing, radius, fontSize } from "@/lib/theme";
 
 const WEB_URL = process.env.EXPO_PUBLIC_WEB_URL || "http://localhost:3000";
-const APP_NAME = I18nManager.isRTL ? "أخبار الذكاء" : "AI News";
 
 export default function SignInScreen() {
+  const { t } = useTranslation();
+
   return (
     <View style={styles.container}>
       <View style={styles.logoContainer}>
         <View style={styles.logoIcon}>
           <Zap size={24} color="#fff" />
         </View>
-        <Text style={styles.logoText}>{APP_NAME}</Text>
+        <Text style={styles.logoText}>AI News</Text>
       </View>
 
-      <Text style={styles.title}>Sign In</Text>
+      <Text style={styles.title}>{t("common.signIn")}</Text>
       <Text style={styles.subtitle}>
         Sign in via the web app to access your personalized feed.
       </Text>
@@ -25,7 +27,7 @@ export default function SignInScreen() {
         onPress={() => Linking.openURL(`${WEB_URL}/fr/sign-in`)}
       >
         <ExternalLink size={18} color="#fff" />
-        <Text style={styles.buttonText}>Open Sign In (Browser)</Text>
+        <Text style={styles.buttonText}>{t("common.signIn")}</Text>
       </TouchableOpacity>
     </View>
   );

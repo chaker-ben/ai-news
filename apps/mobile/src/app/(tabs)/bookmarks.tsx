@@ -10,51 +10,36 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { ExternalLink, Trash2, Bookmark as BookmarkIcon } from "lucide-react-native";
-import { apiClient, Bookmark } from "@/lib/api";
+import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
+import { ExternalLink, Trash2, Bookmark as BookmarkIcon } from "@/lib/icons";
+import { apiClient, type Bookmark } from "@/lib/api";
 import { colors, spacing, radius, fontSize } from "@/lib/theme";
+import { ScoreBadge } from "@/components/ui/ScoreBadge";
+import { SourceBadge } from "@/components/ui/SourceBadge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 function BookmarkCard({
   bookmark,
   onRemove,
+  onPress,
 }: {
   bookmark: Bookmark;
   onRemove: (articleId: string) => void;
+  onPress: (articleId: string) => void;
 }) {
+  const { t } = useTranslation();
   const { article } = bookmark;
 
-  const handleOpenUrl = useCallback(() => {
-    Linking.openURL(article.url);
-  }, [article.url]);
-
-  const handleRemove = useCallback(() => {
-    Alert.alert(
-      "Remove Bookmark",
-      "Are you sure you want to remove this bookmark?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Remove",
-          style: "destructive",
-          onPress: () => onRemove(bookmark.articleId),
-        },
-      ],
-    );
-  }, [bookmark.articleId, onRemove]);
-
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => onPress(article.id)}
+      activeOpacity={0.7}
+    >
       <View style={styles.cardHeader}>
-        <View style={[styles.sourceBadge, { backgroundColor: `${colors.primary}20` }]}>
-          <Text style={[styles.sourceBadgeText, { color: colors.primary }]}>
-            {article.source_type}
-          </Text>
-        </View>
-        <View style={[styles.badge, { borderColor: colors.primary }]}>
-          <Text style={[styles.badgeText, { color: colors.primary }]}>
-            {article.score.toFixed(1)}
-          </Text>
-        </View>
+        <SourceBadge type={article.source_type} />
+        <ScoreBadge score={article.score} />
       </View>
       <Text style={styles.cardTitle}>{article.title}</Text>
       {article.summary ? (
@@ -63,34 +48,40 @@ function BookmarkCard({
         </Text>
       ) : null}
       <Text style={styles.savedDate}>
-        Saved {new Intl.DateTimeFormat("fr-FR", {
+        {t("bookmarks.saved")}{" "}
+        {new Intl.DateTimeFormat("fr-FR", {
           day: "numeric",
           month: "short",
         }).format(new Date(bookmark.createdAt))}
       </Text>
       <View style={styles.cardActions}>
         <TouchableOpacity
-          onPress={handleOpenUrl}
+          onPress={() => Linking.openURL(article.url)}
           style={styles.actionButton}
-          accessibilityLabel="Open article"
-          accessibilityRole="link"
+          accessibilityLabel={t("articles.openInBrowser")}
         >
           <ExternalLink size={16} color={colors.textMuted} />
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={handleRemove}
+          onPress={() => {
+            Alert.alert(t("bookmarks.remove"), t("bookmarks.removeConfirm"), [
+              { text: t("common.cancel"), style: "cancel" },
+              { text: t("common.delete"), style: "destructive", onPress: () => onRemove(bookmark.articleId) },
+            ]);
+          }}
           style={styles.actionButton}
-          accessibilityLabel="Remove bookmark"
-          accessibilityRole="button"
+          accessibilityLabel={t("bookmarks.remove")}
         >
           <Trash2 size={16} color={colors.error} />
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
 export default function BookmarksScreen() {
+  const { t } = useTranslation();
+  const router = useRouter();
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -116,19 +107,18 @@ export default function BookmarksScreen() {
     fetchBookmarks();
   }, [fetchBookmarks]);
 
-  const handleRemove = useCallback(
-    async (articleId: string) => {
-      try {
-        await apiClient.removeBookmark(articleId);
-        setBookmarks((prev) =>
-          prev.filter((b) => b.articleId !== articleId),
-        );
-      } catch (error) {
-        console.error("Failed to remove bookmark:", error);
-      }
-    },
-    [],
-  );
+  const handleRemove = useCallback(async (articleId: string) => {
+    try {
+      await apiClient.removeBookmark(articleId);
+      setBookmarks((prev) => prev.filter((b) => b.articleId !== articleId));
+    } catch (error) {
+      console.error("Failed to remove bookmark:", error);
+    }
+  }, []);
+
+  const handlePress = useCallback((articleId: string) => {
+    router.push(`/article/${articleId}`);
+  }, [router]);
 
   if (loading) {
     return (
@@ -143,117 +133,36 @@ export default function BookmarksScreen() {
       data={bookmarks}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
-        <BookmarkCard bookmark={item} onRemove={handleRemove} />
+        <BookmarkCard bookmark={item} onRemove={handleRemove} onPress={handlePress} />
       )}
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor={colors.primary}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={colors.primary} />
       }
       contentContainerStyle={styles.list}
       style={styles.container}
       ListEmptyComponent={
-        <View style={styles.empty}>
-          <BookmarkIcon size={48} color={colors.textMuted} />
-          <Text style={styles.emptyText}>No bookmarks yet</Text>
-          <Text style={styles.emptySubtext}>
-            Save articles from the feed to read later
-          </Text>
-        </View>
+        <EmptyState
+          icon={<BookmarkIcon size={48} color={colors.textMuted} />}
+          title={t("bookmarks.empty")}
+          description={t("bookmarks.emptyDesc")}
+        />
       }
     />
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  list: {
-    padding: spacing.lg,
-  },
-  center: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: colors.background,
-  },
+  container: { flex: 1, backgroundColor: colors.background },
+  list: { padding: spacing.lg },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: colors.background },
   card: {
-    backgroundColor: colors.surfaceLight,
-    borderRadius: radius.lg,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
+    backgroundColor: colors.surfaceLight, borderRadius: radius.lg, padding: spacing.lg,
+    borderWidth: 1, borderColor: colors.border, marginBottom: spacing.md,
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    marginBottom: spacing.sm,
-  },
-  cardTitle: {
-    color: colors.text,
-    fontSize: fontSize.lg,
-    fontWeight: "600",
-    lineHeight: 22,
-  },
-  cardSummary: {
-    color: colors.textSecondary,
-    fontSize: fontSize.md,
-    lineHeight: 20,
-    marginTop: spacing.xs + 2,
-  },
-  savedDate: {
-    color: colors.textMuted,
-    fontSize: fontSize.sm,
-    marginTop: spacing.sm,
-  },
-  cardActions: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: spacing.md,
-    marginTop: spacing.md,
-  },
-  actionButton: {
-    padding: spacing.sm,
-    borderRadius: radius.md,
-  },
-  badge: {
-    borderWidth: 1,
-    borderRadius: radius.full,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 2,
-  },
-  badgeText: {
-    fontSize: fontSize.xs,
-    fontWeight: "600",
-  },
-  sourceBadge: {
-    borderRadius: radius.sm,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 3,
-  },
-  sourceBadgeText: {
-    fontSize: fontSize.xs,
-    fontWeight: "500",
-  },
-  empty: {
-    alignItems: "center",
-    paddingTop: 80,
-    gap: spacing.sm,
-  },
-  emptyText: {
-    color: colors.textSecondary,
-    fontSize: fontSize.xl,
-    fontWeight: "500",
-    marginTop: spacing.lg,
-  },
-  emptySubtext: {
-    color: colors.textMuted,
-    fontSize: fontSize.md,
-  },
+  cardHeader: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginBottom: spacing.sm },
+  cardTitle: { color: colors.text, fontSize: fontSize.lg, fontWeight: "600", lineHeight: 22 },
+  cardSummary: { color: colors.textSecondary, fontSize: fontSize.md, lineHeight: 20, marginTop: spacing.xs + 2 },
+  savedDate: { color: colors.textMuted, fontSize: fontSize.sm, marginTop: spacing.sm },
+  cardActions: { flexDirection: "row", justifyContent: "flex-end", gap: spacing.md, marginTop: spacing.md },
+  actionButton: { padding: spacing.sm, borderRadius: radius.md },
 });

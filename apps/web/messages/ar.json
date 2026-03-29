@@ -369,6 +369,14 @@
       "analytics": {
         "name": "لوحة تحليلات",
         "desc": "تابع الاتجاهات ودرجات الصلة وأداء المصادر عبر الزمن."
+      },
+      "aiChat": {
+        "name": "محادثة ذكية حول المقالات",
+        "desc": "تحدث مع الذكاء الاصطناعي حول أي مقال. اطرح أسئلة واحصل على تحليلات معمقة."
+      },
+      "publishing": {
+        "name": "نشر المقالات",
+        "desc": "اكتب وانشر مقالاتك الخاصة مع الصور والفيديو. شارك خبرتك مع المجتمع."
       }
     },
     "howItWorks": {
@@ -417,6 +425,8 @@
           "featureSourcesUnlimited": "مصادر غير محدودة",
           "featureDigest3": "3 ملخصات يومية",
           "featureAllChannels": "جميع قنوات التوصيل",
+          "featureAiChat": "محادثة ذكية (50 رسالة/يوم)",
+          "featurePublish": "نشر مقالات (5/شهر)",
           "featureAlerts": "تنبيهات بالكلمات المفتاحية",
           "featureAnalytics": "لوحة تحليلات كاملة"
         },
@@ -424,6 +434,8 @@
           "name": "فريق",
           "featureEverythingPro": "كل ما في الخطة الاحترافية",
           "featureMembers5": "حتى 5 أعضاء فريق",
+          "featureAiChatTeam": "محادثة ذكية (200 رسالة/يوم)",
+          "featurePublishTeam": "نشر مقالات (20/شهر)",
           "featureSharedDigests": "ملخصات وتقارير مشتركة",
           "featurePrioritySupport": "دعم ذو أولوية",
           "featureApi": "وصول API"

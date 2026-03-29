@@ -20,6 +20,7 @@ import {
   Radio,
   Layers,
   Mail,
+  PenLine,
   Play,
   Star,
   Globe,
@@ -172,10 +173,12 @@ export default function LandingPage() {
   const features = [
     { icon: Radio, key: "aggregation" },
     { icon: Brain, key: "summaries" },
-    { icon: MessageSquare, key: "delivery" },
-    { icon: Layers, key: "categories" },
+    { icon: MessageSquare, key: "aiChat" },
+    { icon: PenLine, key: "publishing" },
     { icon: Bell, key: "alerts" },
     { icon: BarChart3, key: "analytics" },
+    { icon: Layers, key: "categories" },
+    { icon: Mail, key: "delivery" },
   ] as const;
 
   /* ── pricing data ── */
@@ -198,8 +201,9 @@ export default function LandingPage() {
       popular: true,
       features: [
         "featureSourcesUnlimited",
-        "featureDigest3",
         "featureAllChannels",
+        "featureAiChat",
+        "featurePublish",
         "featureAlerts",
         "featureAnalytics",
       ],
@@ -213,9 +217,10 @@ export default function LandingPage() {
       features: [
         "featureEverythingPro",
         "featureMembers5",
-        "featureSharedDigests",
-        "featurePrioritySupport",
+        "featureAiChatTeam",
+        "featurePublishTeam",
         "featureApi",
+        "featurePrioritySupport",
       ],
     },
   ] as const;

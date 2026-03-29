@@ -369,6 +369,14 @@
       "analytics": {
         "name": "Tableau de bord analytique",
         "desc": "Suivez les tendances, les scores de pertinence et la performance des sources."
+      },
+      "aiChat": {
+        "name": "Chat IA par Article",
+        "desc": "Discutez avec l'IA sur n'importe quel article. Posez des questions, obtenez des insights et approfondissez le contenu."
+      },
+      "publishing": {
+        "name": "Publier des Articles",
+        "desc": "Rédigez et publiez vos propres articles avec images et vidéos. Partagez votre expertise avec la communauté."
       }
     },
     "howItWorks": {
@@ -417,6 +425,8 @@
           "featureSourcesUnlimited": "Sources illimitées",
           "featureDigest3": "3 digests quotidiens",
           "featureAllChannels": "Tous les canaux de livraison",
+          "featureAiChat": "Chat IA (50 msgs/jour)",
+          "featurePublish": "Publier des articles (5/mois)",
           "featureAlerts": "Alertes par mots-clés",
           "featureAnalytics": "Tableau de bord analytique complet"
         },
@@ -424,6 +434,8 @@
           "name": "Équipe",
           "featureEverythingPro": "Tout ce qui est dans Pro",
           "featureMembers5": "Jusqu'à 5 membres d'équipe",
+          "featureAiChatTeam": "Chat IA (200 msgs/jour)",
+          "featurePublishTeam": "Publier des articles (20/mois)",
           "featureSharedDigests": "Digests et rapports partagés",
           "featurePrioritySupport": "Support prioritaire",
           "featureApi": "Accès API"
