@@ -25,4 +25,14 @@ const envSchema = z.object({
   R2_PUBLIC_URL: z.string().url().optional(),
 });
 
-export const env = envSchema.parse(process.env);
+function getEnv() {
+  return envSchema.parse(process.env);
+}
+
+/** Validated environment variables — parsed lazily at first access (safe for `next build`). */
+export const env = new Proxy({} as z.infer<typeof envSchema>, {
+  get(_target, prop: string) {
+    const parsed = getEnv();
+    return parsed[prop as keyof typeof parsed];
+  },
+});
