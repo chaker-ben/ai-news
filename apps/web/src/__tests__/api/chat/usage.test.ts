@@ -1,5 +1,4 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
-import { NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { prisma } from '@ai-news/db'
 import { GET } from '@/app/api/chat/usage/route'

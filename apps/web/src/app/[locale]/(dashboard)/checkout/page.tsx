@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import {
   Check,
-  Zap,
   Crown,
   Users,
   Building2,
@@ -167,12 +166,12 @@ export default function CheckoutPage() {
           await initAirwallex();
 
           const airwallex = await import("airwallex-payment-elements");
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Airwallex types are imprecise for dropIn
           const dropIn = airwallex.createElement("dropIn", {
             intent_id: result.data.payment_intent_id,
             client_secret: result.data.client_secret,
             currency: result.data.currency.toLowerCase(),
             mode: "payment",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Airwallex types are imprecise for dropIn
           } as any);
 
           if (dropInRef.current && dropIn) {

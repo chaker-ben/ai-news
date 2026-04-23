@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
@@ -132,12 +133,15 @@ export default async function ArticleDetailPage({
             className="mb-8 overflow-hidden rounded-2xl"
             style={{ border: "1px solid var(--border-subtle)" }}
           >
-            <img
+            <Image
               src={article.thumbnail_url}
               alt=""
               className="w-full object-cover"
               style={{ maxHeight: "360px" }}
-              loading="eager"
+              width={800}
+              height={360}
+              unoptimized
+              priority
             />
           </div>
         )}
@@ -339,11 +343,13 @@ export default async function ArticleDetailPage({
                           background: "var(--bg-elevated)",
                         }}
                       >
-                        <img
+                        <Image
                           src={similar.thumbnail_url}
                           alt=""
                           className="h-full w-full object-cover"
-                          loading="lazy"
+                          width={200}
+                          height={96}
+                          unoptimized
                         />
                       </div>
                     )}

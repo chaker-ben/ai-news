@@ -12,6 +12,7 @@ import {
   RotateCcw,
   SearchX,
 } from "lucide-react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { BookmarkButton } from "@/components/bookmark-button";
@@ -346,11 +347,13 @@ export function ArticlesFilterList({
                       background: "var(--bg-elevated)",
                     }}
                   >
-                    <img
+                    <Image
                       src={article.thumbnail_url}
                       alt=""
                       className="h-full w-full object-cover"
-                      loading="lazy"
+                      width={96}
+                      height={64}
+                      unoptimized
                     />
                   </div>
                 )}

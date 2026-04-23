@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Link } from "@/i18n/routing";
 
@@ -82,11 +83,13 @@ export function LandingArticles({ articles, title, cta, locale }: LandingArticle
               {/* Thumbnail */}
               {article.thumbnail_url && (
                 <div className="mb-3 overflow-hidden rounded-lg" style={{ height: "140px" }}>
-                  <img
+                  <Image
                     src={article.thumbnail_url}
                     alt=""
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    loading="lazy"
+                    width={400}
+                    height={140}
+                    unoptimized
                   />
                 </div>
               )}
