@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
   Save,
@@ -559,10 +560,13 @@ export default function NewArticlePage() {
                   border: "1px solid var(--border-subtle)",
                 }}
               >
-                <img
+                <Image
                   src={img.url}
                   alt={img.filename}
                   className="h-full w-full object-cover"
+                  width={80}
+                  height={80}
+                  unoptimized
                 />
                 <button
                   onClick={() => removeImage(img.key)}

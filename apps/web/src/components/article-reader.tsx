@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Play, Pause, Square, Volume2, SkipBack, SkipForward } from "lucide-react";
+import { Play, Pause, Square, Volume2 } from "lucide-react";
 
 interface ArticleReaderProps {
   text: string;

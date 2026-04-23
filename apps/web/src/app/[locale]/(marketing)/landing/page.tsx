@@ -2165,7 +2165,6 @@ export default function LandingPage() {
       {/* ── Demo Video Modal ── */}
       {demoOpen &&
         createPortal(
-          // eslint-disable-next-line jsx-a11y/click-events-have-key-events -- ESC handled in useEffect
           <div
             role="dialog"
             aria-modal="true"

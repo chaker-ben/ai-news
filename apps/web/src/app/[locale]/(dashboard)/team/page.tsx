@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback } from "react";
 import {
@@ -464,10 +465,13 @@ export default function TeamPage() {
                   className="flex items-center gap-3 px-5 py-3"
                 >
                   {member.user.imageUrl ? (
-                    <img
+                    <Image
                       src={member.user.imageUrl}
                       alt=""
                       className="h-8 w-8 rounded-full"
+                      width={32}
+                      height={32}
+                      unoptimized
                     />
                   ) : (
                     <div
