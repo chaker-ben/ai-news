@@ -12,6 +12,7 @@ build/
 # Env — JAMAIS commiter
 .env
 .env.local
+.env.server
 .env.development.local
 .env.test.local
 .env.production.local

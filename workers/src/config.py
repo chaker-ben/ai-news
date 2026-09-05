@@ -10,6 +10,9 @@ class Settings(BaseSettings):
     # Database
     database_url: str = "postgresql://user:password@localhost:5432/ainews"
 
+    # Ingest (external agent → POST /articles/ingest)
+    ingest_token: str = ""
+
     # AI & Translation
     anthropic_api_key: str = ""
     deepl_api_key: str = ""
