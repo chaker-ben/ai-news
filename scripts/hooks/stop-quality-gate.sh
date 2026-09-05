@@ -10,6 +10,19 @@ set +e
 PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 cd "$PROJECT_DIR" || exit 0
 
+# ── Prévention de boucle infinie (contrat du hook Stop) ──────────────
+# Claude Code envoie un JSON sur stdin contenant "stop_hook_active".
+# S'il vaut true, Claude est DÉJÀ en continuation forcée par un Stop
+# précédent : on autorise l'arrêt (exit 0) pour ne JAMAIS boucler.
+# Sans ce garde-fou, un exit 2 répété re-poste le message à l'infini.
+STDIN_JSON=""
+if [ ! -t 0 ]; then
+  STDIN_JSON=$(timeout 1 cat 2>/dev/null || true)
+fi
+if printf '%s' "$STDIN_JSON" | grep -q '"stop_hook_active"[[:space:]]*:[[:space:]]*true'; then
+  exit 0
+fi
+
 # Skip si pas de package.json (pas un projet Node)
 [ -f "package.json" ] || exit 0
 
@@ -22,7 +35,7 @@ REPORT=""
 
 # TypeScript strict
 if [ "$HAS_TYPECHECK" = "1" ]; then
-  if ! pnpm typecheck --silent > /tmp/aidd-stop-tc.log 2>&1; then
+  if ! pnpm typecheck --silent > /tmp/m-stop-tc.log 2>&1; then
     FAILED=1
     REPORT="$REPORT\n❌ TypeScript errors (pnpm typecheck failed)"
   fi
@@ -33,7 +46,7 @@ if [ "$HAS_TEST" = "1" ]; then
   # Détecter s'il y a au moins un fichier de test — sinon on skip silencieusement
   TEST_FILES=$(find . -type f \( -name "*.test.ts" -o -name "*.test.tsx" -o -name "*.spec.ts" -o -name "*.spec.tsx" \) -not -path "./node_modules/*" -not -path "./.next/*" 2>/dev/null | head -1)
   if [ -n "$TEST_FILES" ]; then
-    if ! pnpm test --silent > /tmp/aidd-stop-test.log 2>&1; then
+    if ! pnpm test --silent > /tmp/m-stop-test.log 2>&1; then
       FAILED=1
       REPORT="$REPORT\n❌ Tests failing (pnpm test failed)"
     fi
@@ -52,8 +65,8 @@ if [ "$FAILED" = "1" ]; then
   echo -e "$REPORT" >&2
   echo "" >&2
   echo "Fix requis avant de conclure. Logs :" >&2
-  echo "  /tmp/aidd-stop-tc.log" >&2
-  echo "  /tmp/aidd-stop-test.log" >&2
+  echo "  /tmp/m-stop-tc.log" >&2
+  echo "  /tmp/m-stop-test.log" >&2
   exit 2
 fi
 

@@ -1,11 +1,19 @@
 #!/bin/bash
 # Hook post-edit : détecte les anti-patterns print A4 dans les fichiers HTML
 # Déclenché automatiquement après chaque édition de fichier .html / .htm
-# Warning non-bloquant, pointe vers @.claude/skills/print-layout/SKILL.md
+# Warning non-bloquant, pointe vers @.claude/skills/m-print-layout/SKILL.md
 #
-# Référence : .claude/skills/print-layout/SKILL.md (sections 1, 2, 3, 7)
+# Référence : .claude/skills/m-print-layout/SKILL.md (sections 1, 2, 3, 7)
 
-FILE="${CLAUDE_TOOL_INPUT_FILE_PATH:-$1}"
+FILE=""
+INPUT=""
+if [ ! -t 0 ]; then
+  INPUT=$(cat 2>/dev/null)
+fi
+FILE=$(printf '%s' "$INPUT" | python3 -c 'import sys,json
+try: print(json.load(sys.stdin).get("tool_input",{}).get("file_path",""))
+except Exception: print("")' 2>/dev/null)
+[ -z "$FILE" ] && FILE="${CLAUDE_TOOL_INPUT_FILE_PATH:-$1}"
 
 # Garde-fous : fichier existe et est du HTML
 if [ -z "$FILE" ] || [ ! -f "$FILE" ]; then
@@ -25,24 +33,24 @@ declare -a ISSUES
 
 # ── Anti-pattern 1 : min-height sur une page ─────────────────────────────────
 # Le guide interdit min-height car il casse le page-break en impression.
-if grep -nE 'min-height:\s*(297mm|100vh|100%)' "$FILE" | grep -vE '^\s*//|^\s*\*' > /tmp/aidd-print-minh 2>/dev/null; then
-  if [ -s /tmp/aidd-print-minh ]; then
+if grep -nE 'min-height:\s*(297mm|100vh|100%)' "$FILE" | grep -vE '^\s*//|^\s*\*' > /tmp/m-print-minh 2>/dev/null; then
+  if [ -s /tmp/m-print-minh ]; then
     while IFS= read -r line; do
       ISSUES+=("min-height détecté — remplacer par height (SKILL §1) :: $line")
-    done < /tmp/aidd-print-minh
+    done < /tmp/m-print-minh
   fi
 fi
 
 # ── Anti-pattern 2 : position:absolute sur footer ─────────────────────────────
 # Le footer doit rester dans le flow flex (flex-shrink: 0).
-if grep -nE 'position:\s*absolute' "$FILE" > /tmp/aidd-print-abs 2>/dev/null; then
-  if [ -s /tmp/aidd-print-abs ]; then
+if grep -nE 'position:\s*absolute' "$FILE" > /tmp/m-print-abs 2>/dev/null; then
+  if [ -s /tmp/m-print-abs ]; then
     # Ne flag que si c'est proche d'un contexte footer
     while IFS= read -r line; do
       if echo "$line" | grep -qiE 'footer|pftr|\.pftr'; then
         ISSUES+=("position:absolute sur footer — utiliser flex-shrink:0 (SKILL §2) :: $line")
       fi
-    done < /tmp/aidd-print-abs
+    done < /tmp/m-print-abs
   fi
 fi
 
@@ -70,20 +78,19 @@ if grep -qE 'class="pg"' "$FILE" && ! grep -q '@page' "$FILE"; then
 fi
 
 # Cleanup temp files
-rm -f /tmp/aidd-print-minh /tmp/aidd-print-abs 2>/dev/null
+rm -f /tmp/m-print-minh /tmp/m-print-abs 2>/dev/null
 
 # ── Output ───────────────────────────────────────────────────────────────────
 if [ ${#ISSUES[@]} -gt 0 ]; then
-  echo "" >&2
-  echo "🖨️  PRINT CHECK — $FILE" >&2
-  echo "─────────────────────────────────────────────" >&2
+  MSG="[Maestro] Print check — anti-patterns détectés dans $FILE :"
   for issue in "${ISSUES[@]}"; do
-    echo "⚠️  $issue" >&2
+    MSG="$MSG
+  - $issue"
   done
-  echo "─────────────────────────────────────────────" >&2
-  echo "Guide complet : @.claude/skills/print-layout/SKILL.md" >&2
-  echo "Template prêt : .claude/skills/print-layout/templates/structural.css" >&2
-  echo "" >&2
+  MSG="$MSG
+Guide : .claude/skills/m-print-layout/SKILL.md · Template : .claude/skills/m-print-layout/templates/structural.css"
+  # Sortie structurée -> visible par Claude (PostToolUse additionalContext)
+  printf '%s' "$MSG" | python3 -c 'import sys,json; print(json.dumps({"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":sys.stdin.read()}}))' 2>/dev/null
 fi
 
 # Warning seulement — ne bloque pas l'édition (cohérent avec post-edit-emoji-check)

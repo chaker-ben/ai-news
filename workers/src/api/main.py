@@ -8,6 +8,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI, Query
 from sqlalchemy.orm import Session
 
+from workers.src.api.ingest import router as ingest_router
 from workers.src.collectors.rss_collector import seed_default_sources
 from workers.src.config import settings
 from workers.src.models.article import (
@@ -97,6 +98,7 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+app.include_router(ingest_router)
 
 
 # ── Health ──
