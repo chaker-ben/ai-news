@@ -1,13 +1,15 @@
 """FastAPI application — internal API for AI News workers."""
 import logging
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Annotated, Optional
+from datetime import date, datetime, time, timedelta, timezone
+from typing import Annotated, Literal, Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from workers.src.api.ingest import require_ingest_token
 from workers.src.api.ingest import router as ingest_router
 from workers.src.collectors.rss_collector import seed_default_sources
 from workers.src.config import settings
@@ -21,6 +23,7 @@ from workers.src.models.article import (
     create_tables,
     get_db,
 )
+from workers.src.notifiers.email import send_email
 from workers.src.notifiers.whatsapp import send_digest, send_digest_to_user
 from workers.src.processors.pipeline import process_unprocessed_articles
 from workers.src.scheduler.jobs import (
@@ -118,6 +121,20 @@ def health_check():
 # ── Articles ──
 
 
+def published_window(
+    date_from: Optional[date], date_to: Optional[date], tz_offset: int
+) -> tuple[Optional[datetime], Optional[datetime]]:
+    """Convert inclusive local calendar dates into a naive-UTC [start, end) window.
+
+    ``tz_offset`` is the viewer's offset from UTC in minutes (e.g. 180 for Riyadh),
+    so "today" means the viewer's day, not the server's.
+    """
+    offset = timedelta(minutes=tz_offset)
+    start = datetime.combine(date_from, time.min) - offset if date_from else None
+    end = datetime.combine(date_to + timedelta(days=1), time.min) - offset if date_to else None
+    return start, end
+
+
 @app.get("/articles")
 def list_articles(
     db: DbSession,
@@ -125,14 +142,29 @@ def list_articles(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     min_score: Annotated[float, Query(ge=0, le=10)] = 0.0,
     source_type: Optional[str] = None,
+    date_from: Annotated[Optional[date], Query(description="Inclusive local date YYYY-MM-DD")] = None,
+    date_to: Annotated[Optional[date], Query(description="Inclusive local date YYYY-MM-DD")] = None,
+    tz_offset: Annotated[int, Query(ge=-840, le=840, description="Viewer UTC offset in minutes")] = 0,
+    sort: Annotated[Literal["score", "date"], Query()] = "score",
 ):
-    """List collected articles, ordered by score."""
+    """List collected articles, ordered by score (default) or by publication date."""
     query = db.query(Article).filter(Article.score >= min_score)
 
     if source_type:
         query = query.filter(Article.source_type == source_type)
 
-    articles = query.order_by(Article.score.desc()).offset(skip).limit(limit).all()
+    start, end = published_window(date_from, date_to, tz_offset)
+    if start is not None:
+        query = query.filter(Article.published_at >= start)
+    if end is not None:
+        query = query.filter(Article.published_at < end)
+
+    if sort == "date":
+        ordering = (Article.published_at.desc(), Article.score.desc())
+    else:
+        ordering = (Article.score.desc(), Article.published_at.desc())
+
+    articles = query.order_by(*ordering).offset(skip).limit(limit).all()
     total = query.count()
 
     return {
@@ -254,6 +286,29 @@ async def reprocess_all_articles(db: DbSession):
 
     processed = await process_unprocessed_articles(db)
     return {"status": "ok", "reprocessed": len(processed)}
+
+
+class EmailRequest(BaseModel):
+    """Transactional email relayed through Resend (used by the daily veille agent)."""
+
+    to: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=320)
+    subject: str = Field(min_length=1, max_length=300)
+    html: str = Field(min_length=1, max_length=500_000)
+
+
+@app.post("/notify/email", dependencies=[Depends(require_ingest_token)])
+async def send_transactional_email(payload: EmailRequest):
+    """Send one HTML email via Resend (authenticated with X-Ingest-Token).
+
+    Lets automation that has no mail connector (e.g. a Claude Routine in a cloud
+    environment) deliver the daily recap. Returns 503 when Resend is not configured.
+    """
+    if not settings.resend_api_key:
+        raise HTTPException(status_code=503, detail="RESEND_API_KEY not configured")
+    sent = await send_email(payload.to, payload.subject, payload.html)
+    if not sent:
+        raise HTTPException(status_code=502, detail="Resend rejected the email (see server logs)")
+    return {"status": "sent", "to": payload.to}
 
 
 @app.post("/notify/digest")

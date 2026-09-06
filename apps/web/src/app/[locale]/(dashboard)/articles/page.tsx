@@ -5,25 +5,54 @@ import { getLocalizedArticle, getIntlLocale } from "@/lib/article-i18n";
 import { ArticlesFilterList } from "@/components/articles/articles-filter-list";
 import { ScoreLegend } from "@/components/score-badge";
 
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseDateParam(value: string | undefined): string | undefined {
+  return value && DATE_RE.test(value) ? value : undefined;
+}
+
+function parseTzOffset(value: string | undefined): number {
+  const n = Number(value);
+  return Number.isFinite(n) && Math.abs(n) <= 840 ? Math.trunc(n) : 0;
+}
+
 export default async function ArticlesPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ from?: string; to?: string; tz?: string }>;
 }) {
   const { locale } = await params;
+  const { from, to, tz } = await searchParams;
   const intlLocale = getIntlLocale(locale);
   const t = await getTranslations("articles");
+
+  // Day filter: inclusive local dates from the URL, resolved server-side so the
+  // whole day is returned instead of only the 30 top-scored articles.
+  const dateFrom = parseDateParam(from);
+  const dateTo = parseDateParam(to) ?? dateFrom;
+  const dateFilter =
+    dateFrom && dateTo ? { from: dateFrom, to: dateTo } : null;
 
   let articles = null;
 
   try {
-    const response = await getArticles({ limit: 30 });
+    const response = dateFilter
+      ? await getArticles({
+          limit: 100,
+          date_from: dateFilter.from,
+          date_to: dateFilter.to,
+          tz_offset: parseTzOffset(tz),
+          sort: "date",
+        })
+      : await getArticles({ limit: 30 });
     articles = response.articles;
   } catch {
     // API not available
   }
 
-  if (!articles || articles.length === 0) {
+  if (!dateFilter && (!articles || articles.length === 0)) {
     return (
       <div className="space-y-6">
         <div>
@@ -60,7 +89,7 @@ export default async function ArticlesPage({
     );
   }
 
-  const localizedArticles = articles.map((article) => {
+  const localizedArticles = (articles ?? []).map((article) => {
     const localized = getLocalizedArticle(article, locale);
     return {
       id: article.id,
@@ -99,6 +128,7 @@ export default async function ArticlesPage({
       <ArticlesFilterList
         localizedArticles={localizedArticles}
         intlLocale={intlLocale}
+        dateFilter={dateFilter}
       />
     </div>
   );

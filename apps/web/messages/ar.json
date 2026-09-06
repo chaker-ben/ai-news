@@ -102,7 +102,15 @@
     "markAsRead": "تحديد كمقروء",
     "markedAsRead": "مقروء",
     "similarArticles": "مقالات مشابهة",
-    "originalContentLabel": "المحتوى الأصلي"
+    "originalContentLabel": "المحتوى الأصلي",
+    "dateFilterLabel": "التاريخ",
+    "dateAll": "كل التواريخ",
+    "dateToday": "اليوم",
+    "dateYesterday": "أمس",
+    "dateLast7Days": "آخر 7 أيام",
+    "datePick": "اختر تاريخًا",
+    "dateShowing": "المقالات المنشورة في {date}",
+    "dateShowingRange": "المقالات المنشورة من {from} إلى {to}"
   },
   "sources": {
     "title": "المصادر",
@@ -394,7 +402,7 @@
         "desc": "احصل على ملخص مخصص لأهم أخبار الذكاء الاصطناعي كل يوم."
       },
       "cta": "جرّب مجاناً",
-      "reassurance": "لا تحتاج بطاقة ائتمان \u00b7 وصول فوري \u00b7 إلغاء في أي وقت"
+      "reassurance": "لا تحتاج بطاقة ائتمان · وصول فوري · إلغاء في أي وقت"
     },
     "pricing": {
       "title": "أسعار بسيطة وشفافة",
