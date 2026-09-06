@@ -97,3 +97,15 @@ def test_ingest_article_validation_rejects_bad_score_and_url():
         IngestArticle(**{**_item().model_dump(), "score": 11})
     with pytest.raises(ValidationError):
         IngestArticle(**{**_item().model_dump(), "url": "not-a-url"})
+
+
+def test_ingest_returns_ids_for_inserted_and_skipped(db):
+    first = ingest_articles(db, [_item()])
+    assert len(first.inserted_items) == 1
+    ref = first.inserted_items[0]
+    assert ref.url == "https://openai.com/blog/gpt-6"
+    assert db.query(Article).one().id == ref.id
+
+    second = ingest_articles(db, [_item()])
+    assert second.inserted_items == []
+    assert [r.id for r in second.skipped_items] == [ref.id]  # links to the existing article

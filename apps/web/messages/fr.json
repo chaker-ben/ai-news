@@ -102,7 +102,15 @@
     "markAsRead": "Marquer comme lu",
     "markedAsRead": "Lu",
     "similarArticles": "Articles similaires",
-    "originalContentLabel": "Contenu original"
+    "originalContentLabel": "Contenu original",
+    "dateFilterLabel": "Date",
+    "dateAll": "Toutes les dates",
+    "dateToday": "Aujourd'hui",
+    "dateYesterday": "Hier",
+    "dateLast7Days": "7 derniers jours",
+    "datePick": "Choisir une date",
+    "dateShowing": "Articles publiés le {date}",
+    "dateShowingRange": "Articles publiés du {from} au {to}"
   },
   "sources": {
     "title": "Sources",

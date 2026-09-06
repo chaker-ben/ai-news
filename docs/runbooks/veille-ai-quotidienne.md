@@ -26,6 +26,12 @@ Le run planifié de 07:57 UTC a échoué sur deux étapes : insertion en base (R
 | Permissions | Le run manuel de 08:18 UTC s'est bloqué en attente d'approbation sur un `WebFetch` (statut `REQUIRES_ACTION`). La Routine v2 ne porte pas d'événement `set_permission_mode: auto`, contrairement à la Routine Upwork. |
 | Routines créées par API | `create_trigger` ne peut pas attacher de connecteur (Gmail) dans cette organisation : une Routine créée ainsi ne peut pas envoyer de mail. La v3 créée le 06/09 (`trig_01YS2tzTz3JiwjKJFNZrLLjH`) a donc été désactivée. |
 
+## Évolutions du 2026-09-06 (code)
+
+- `POST /articles/ingest` renvoie désormais `inserted_items` et `skipped_items` (`{id, original_title, url}`) pour construire les liens plateforme `https://ai-news-production-1ae0.up.railway.app/<locale>/articles/<id>`.
+- `GET /articles` accepte `date_from`, `date_to` (dates locales inclusives `YYYY-MM-DD`), `tz_offset` (décalage UTC du lecteur en minutes, 180 pour Riyad) et `sort=score|date`.
+- Page `/articles` de l'app web : filtre par jour (Aujourd'hui, Hier, 7 derniers jours, date libre) porté par l'URL (`?from=&to=&tz=`), résolu côté serveur pour renvoyer toute la journée. Exemple : `/fr/articles?from=2026-09-06&to=2026-09-06&tz=180`.
+
 ## Rattrapage effectué le 2026-09-06
 
 Depuis la session Claude Code (env « Par défaut ») :
@@ -82,9 +88,12 @@ Avant de rédiger : `curl -sS "https://zestful-wonder-production-58cb.up.railway
 
 Écris le payload dans un fichier JSON (veille-<AAAA-MM-JJ>-payload.json), valide-le avec python3 (json.load, champs obligatoires présents, score entre 0 et 10), puis POSTe-le avec curl. Si l'insertion échoue (proxy, 5xx, timeout), réessaie une fois après 30 s ; si ça échoue encore, joins le fichier JSON en pièce jointe au mail récapitulatif et signale en tête du mail « ⚠️ Insertion en base impossible : <erreur exacte> — payload en pièce jointe à réinjecter ».
 
+## Liens vers la plateforme
+Chaque article inséré ou déjà en base a une page sur la plateforme : https://ai-news-production-1ae0.up.railway.app/fr/articles/<id>. La réponse d'ingestion renvoie `inserted_items` et `skipped_items`, listes de {id, original_title, url} (pour un doublon, l'id est celui de l'article déjà en base) : utilise ces ids. Si ces champs sont absents (ancienne version de l'API), fais GET /articles?limit=100 après l'insertion (pages suivantes avec skip=100, 200… si besoin) et associe chaque article par son `url`. Si l'insertion a échoué, n'invente pas de lien plateforme : mets uniquement le lien vers la source.
+
 ## Mail récapitulatif (Gmail → it@contentco.sa)
 Sujet : « Veille AI — <date du jour JJ/MM/AAAA> — N articles (X insérés, Y doublons) ».
-Corps HTML (htmlBody) auto-suffisant, styles inline, largeur max 680px : bandeau titre sombre avec la date et les compteurs ; puis une carte par article triée par score décroissant avec : source · date · badge score, titre FR cliquable (lien vers la source), résumé FR, ligne « EN — titre EN », ligne « AR — titre AR » en dir="rtl", lien « Lire la source → ». Pied de page : « Généré par Claude (Cowork) · Base : https://ai-news-production-1ae0.up.railway.app ». Fournis aussi une version texte (body) courte listant les titres FR avec leurs URLs. Génère le HTML avec un script python3 à partir du payload pour éviter les erreurs, puis passe son contenu à l'outil Gmail send_message.
+Corps HTML (htmlBody) auto-suffisant, styles inline, largeur max 680px : bandeau titre sombre avec la date et les compteurs ; puis une carte par article triée par score décroissant avec : source · date · badge score, titre FR cliquable (lien vers la page de l'article sur la plateforme AI News ; à défaut vers la source), résumé FR, ligne « EN — titre EN », ligne « AR — titre AR » en dir="rtl", puis deux liens : « Voir sur AI News → » (page plateforme) et « Lire la source → » (URL d'origine). Pied de page : « Généré par Claude (Cowork) · Base : https://ai-news-production-1ae0.up.railway.app ». Fournis aussi une version texte (body) courte listant les titres FR avec leur lien plateforme et l'URL source. Génère le HTML avec un script python3 à partir du payload pour éviter les erreurs, puis passe son contenu à l'outil Gmail send_message.
 Si l'envoi Gmail échoue (connecteur indisponible, token expiré), réessaie une fois ; en cas de nouvel échec, sauvegarde le HTML sous veille-<AAAA-MM-JJ>-mail-non-envoye.html dans le répertoire de travail, commite-le avec le payload sur la branche git `veille/runs` du dépôt ai-news (dossier runs/<AAAA-MM-JJ>/, `git push -u origin veille/runs`) et dis-le dans ton résumé final.
 
 ## Fin du run

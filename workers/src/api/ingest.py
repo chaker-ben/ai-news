@@ -49,11 +49,21 @@ class IngestRequest(BaseModel):
     articles: list[IngestArticle] = Field(min_length=1, max_length=100)
 
 
+class IngestedRef(BaseModel):
+    """Identifies a stored article so callers can link to it on the platform."""
+
+    id: str
+    original_title: str
+    url: str
+
+
 class IngestResult(BaseModel):
     inserted: list[str]
     skipped: list[str]
     inserted_count: int
     skipped_count: int
+    inserted_items: list[IngestedRef] = Field(default_factory=list)
+    skipped_items: list[IngestedRef] = Field(default_factory=list)
 
 
 def require_ingest_token(x_ingest_token: Annotated[str, Header()] = "") -> None:
@@ -86,6 +96,8 @@ def ingest_articles(db: Session, items: list[IngestArticle]) -> IngestResult:
     """Insert new articles, skipping any whose content_hash already exists."""
     inserted: list[str] = []
     skipped: list[str] = []
+    inserted_items: list[IngestedRef] = []
+    skipped_items: list[IngestedRef] = []
     seen_in_batch: set[str] = set()
 
     for item in items:
@@ -99,6 +111,7 @@ def ingest_articles(db: Session, items: list[IngestArticle]) -> IngestResult:
         exists = db.query(Article).filter(Article.content_hash == content_hash).first()
         if exists:
             skipped.append(item.original_title)
+            skipped_items.append(IngestedRef(id=exists.id, original_title=item.original_title, url=url))
             continue
 
         source = get_or_create_source(db, item.source_name, item.source_type, url)
@@ -106,27 +119,28 @@ def ingest_articles(db: Session, items: list[IngestArticle]) -> IngestResult:
         if published.tzinfo is not None:
             published = published.astimezone(timezone.utc).replace(tzinfo=None)
 
-        db.add(
-            Article(
-                source_id=source.id,
-                source_type=item.source_type,
-                original_title=item.original_title,
-                title_fr=item.title_fr,
-                title_en=item.title_en,
-                title_ar=item.title_ar,
-                original_content=item.original_content,
-                summary_fr=item.summary_fr,
-                summary_en=item.summary_en,
-                summary_ar=item.summary_ar,
-                url=url,
-                thumbnail_url=str(item.thumbnail_url) if item.thumbnail_url else None,
-                published_at=published,
-                score=item.score,
-                notified=False,
-                content_hash=content_hash,
-            )
+        article = Article(
+            source_id=source.id,
+            source_type=item.source_type,
+            original_title=item.original_title,
+            title_fr=item.title_fr,
+            title_en=item.title_en,
+            title_ar=item.title_ar,
+            original_content=item.original_content,
+            summary_fr=item.summary_fr,
+            summary_en=item.summary_en,
+            summary_ar=item.summary_ar,
+            url=url,
+            thumbnail_url=str(item.thumbnail_url) if item.thumbnail_url else None,
+            published_at=published,
+            score=item.score,
+            notified=False,
+            content_hash=content_hash,
         )
+        db.add(article)
+        db.flush()  # assigns the id so callers can link to the article
         inserted.append(item.original_title)
+        inserted_items.append(IngestedRef(id=article.id, original_title=item.original_title, url=url))
 
     db.commit()
     logger.info("Ingest: %d inserted, %d skipped", len(inserted), len(skipped))
@@ -135,6 +149,8 @@ def ingest_articles(db: Session, items: list[IngestArticle]) -> IngestResult:
         skipped=skipped,
         inserted_count=len(inserted),
         skipped_count=len(skipped),
+        inserted_items=inserted_items,
+        skipped_items=skipped_items,
     )
 
 

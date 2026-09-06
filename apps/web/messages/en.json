@@ -102,7 +102,15 @@
     "markAsRead": "Mark as read",
     "markedAsRead": "Read",
     "similarArticles": "Similar articles",
-    "originalContentLabel": "Original content"
+    "originalContentLabel": "Original content",
+    "dateFilterLabel": "Date",
+    "dateAll": "All dates",
+    "dateToday": "Today",
+    "dateYesterday": "Yesterday",
+    "dateLast7Days": "Last 7 days",
+    "datePick": "Pick a date",
+    "dateShowing": "Articles published on {date}",
+    "dateShowingRange": "Articles published from {from} to {to}"
   },
   "sources": {
     "title": "Sources",
@@ -394,7 +402,7 @@
         "desc": "Receive a personalized summary of the most relevant AI news every day."
       },
       "cta": "Try it free",
-      "reassurance": "No credit card required \u00b7 Instant access \u00b7 Cancel anytime"
+      "reassurance": "No credit card required · Instant access · Cancel anytime"
     },
     "pricing": {
       "title": "Simple, transparent pricing",

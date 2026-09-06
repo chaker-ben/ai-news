@@ -1,8 +1,8 @@
 """FastAPI application — internal API for AI News workers."""
 import logging
 from contextlib import asynccontextmanager
-from datetime import datetime, timezone
-from typing import Annotated, Optional
+from datetime import date, datetime, time, timedelta, timezone
+from typing import Annotated, Literal, Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI, Query
@@ -118,6 +118,20 @@ def health_check():
 # ── Articles ──
 
 
+def published_window(
+    date_from: Optional[date], date_to: Optional[date], tz_offset: int
+) -> tuple[Optional[datetime], Optional[datetime]]:
+    """Convert inclusive local calendar dates into a naive-UTC [start, end) window.
+
+    ``tz_offset`` is the viewer's offset from UTC in minutes (e.g. 180 for Riyadh),
+    so "today" means the viewer's day, not the server's.
+    """
+    offset = timedelta(minutes=tz_offset)
+    start = datetime.combine(date_from, time.min) - offset if date_from else None
+    end = datetime.combine(date_to + timedelta(days=1), time.min) - offset if date_to else None
+    return start, end
+
+
 @app.get("/articles")
 def list_articles(
     db: DbSession,
@@ -125,14 +139,29 @@ def list_articles(
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
     min_score: Annotated[float, Query(ge=0, le=10)] = 0.0,
     source_type: Optional[str] = None,
+    date_from: Annotated[Optional[date], Query(description="Inclusive local date YYYY-MM-DD")] = None,
+    date_to: Annotated[Optional[date], Query(description="Inclusive local date YYYY-MM-DD")] = None,
+    tz_offset: Annotated[int, Query(ge=-840, le=840, description="Viewer UTC offset in minutes")] = 0,
+    sort: Annotated[Literal["score", "date"], Query()] = "score",
 ):
-    """List collected articles, ordered by score."""
+    """List collected articles, ordered by score (default) or by publication date."""
     query = db.query(Article).filter(Article.score >= min_score)
 
     if source_type:
         query = query.filter(Article.source_type == source_type)
 
-    articles = query.order_by(Article.score.desc()).offset(skip).limit(limit).all()
+    start, end = published_window(date_from, date_to, tz_offset)
+    if start is not None:
+        query = query.filter(Article.published_at >= start)
+    if end is not None:
+        query = query.filter(Article.published_at < end)
+
+    if sort == "date":
+        ordering = (Article.published_at.desc(), Article.score.desc())
+    else:
+        ordering = (Article.score.desc(), Article.published_at.desc())
+
+    articles = query.order_by(*ordering).offset(skip).limit(limit).all()
     total = query.count()
 
     return {

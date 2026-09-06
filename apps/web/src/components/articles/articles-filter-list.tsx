@@ -11,10 +11,11 @@ import {
   ArrowDownWideNarrow,
   RotateCcw,
   SearchX,
+  CalendarDays,
 } from "lucide-react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { ScoreBadge } from "@/components/score-badge";
 import type { Article } from "@/lib/api";
@@ -28,6 +29,51 @@ interface LocalizedArticle {
   title: string;
   summary: string | null;
   article: Article;
+}
+
+/** Inclusive local calendar dates (YYYY-MM-DD) currently applied via the URL. */
+export interface DateFilter {
+  from: string;
+  to: string;
+}
+
+type DatePreset = "today" | "yesterday" | "last7days";
+
+/** Local calendar date as YYYY-MM-DD (viewer's timezone, not UTC). */
+function toLocalDateString(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function shiftDays(d: Date, days: number): Date {
+  const copy = new Date(d);
+  copy.setDate(copy.getDate() + days);
+  return copy;
+}
+
+function presetRange(preset: DatePreset): DateFilter {
+  const today = new Date();
+  switch (preset) {
+    case "today":
+      return { from: toLocalDateString(today), to: toLocalDateString(today) };
+    case "yesterday": {
+      const y = toLocalDateString(shiftDays(today, -1));
+      return { from: y, to: y };
+    }
+    case "last7days":
+      return {
+        from: toLocalDateString(shiftDays(today, -6)),
+        to: toLocalDateString(today),
+      };
+  }
+}
+
+function isPresetActive(preset: DatePreset, current: DateFilter | null): boolean {
+  if (!current) return false;
+  const range = presetRange(preset);
+  return range.from === current.from && range.to === current.to;
 }
 
 function useDebounce(value: string, delay: number): string {
@@ -121,16 +167,22 @@ function SortChip({
 export function ArticlesFilterList({
   localizedArticles,
   intlLocale,
+  dateFilter = null,
 }: Readonly<{
   localizedArticles: LocalizedArticle[];
   intlLocale: string;
+  dateFilter?: DateFilter | null;
 }>) {
   const t = useTranslations("articles");
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const defaultSort: SortOption = dateFilter ? "date_desc" : "score_desc";
 
   const [query, setQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState<SourceFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
-  const [sortOption, setSortOption] = useState<SortOption>("score_desc");
+  const [sortOption, setSortOption] = useState<SortOption>(defaultSort);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const debouncedQuery = useDebounce(query, 300);
@@ -139,15 +191,44 @@ export function ArticlesFilterList({
     debouncedQuery !== "" ||
     sourceFilter !== "all" ||
     statusFilter !== "all" ||
-    sortOption !== "score_desc";
+    sortOption !== defaultSort ||
+    dateFilter !== null;
+
+  // The day filter lives in the URL so the server fetches the whole day.
+  const applyDateFilter = useCallback(
+    (range: DateFilter | null) => {
+      if (!range) {
+        router.replace(pathname);
+        return;
+      }
+      const params = new URLSearchParams({
+        from: range.from,
+        to: range.to,
+        tz: String(-new Date().getTimezoneOffset()),
+      });
+      router.replace(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname],
+  );
 
   const resetFilters = useCallback(() => {
     setQuery("");
     setSourceFilter("all");
     setStatusFilter("all");
     setSortOption("score_desc");
+    if (dateFilter) applyDateFilter(null);
     inputRef.current?.focus();
-  }, []);
+  }, [dateFilter, applyDateFilter]);
+
+  const formatDate = useCallback(
+    (iso: string) =>
+      new Date(`${iso}T00:00:00`).toLocaleDateString(intlLocale, {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      }),
+    [intlLocale],
+  );
 
   const filtered = useMemo(() => {
     let result = localizedArticles;
@@ -291,6 +372,64 @@ export function ArticlesFilterList({
             }
           />
         </div>
+
+        {/* Day filter (server-side, via URL) */}
+        <div className="flex flex-wrap items-center gap-2">
+          <CalendarDays size={14} style={{ color: "var(--text-muted)" }} />
+          <FilterChip
+            label={t("dateAll")}
+            active={dateFilter === null}
+            onClick={() => applyDateFilter(null)}
+          />
+          {(["today", "yesterday", "last7days"] as const).map((preset) => (
+            <FilterChip
+              key={preset}
+              label={t(
+                preset === "today"
+                  ? "dateToday"
+                  : preset === "yesterday"
+                    ? "dateYesterday"
+                    : "dateLast7Days",
+              )}
+              active={isPresetActive(preset, dateFilter)}
+              onClick={() =>
+                applyDateFilter(
+                  isPresetActive(preset, dateFilter) ? null : presetRange(preset),
+                )
+              }
+            />
+          ))}
+          <input
+            type="date"
+            aria-label={t("datePick")}
+            value={
+              dateFilter && dateFilter.from === dateFilter.to
+                ? dateFilter.from
+                : ""
+            }
+            onChange={(e) => {
+              const v = e.target.value;
+              applyDateFilter(v ? { from: v, to: v } : null);
+            }}
+            className="rounded-full px-3 py-1 text-xs font-medium outline-none ltr-nums"
+            style={{
+              background: "var(--bg-elevated)",
+              color: "var(--text-secondary)",
+              border: "1px solid var(--border-default)",
+            }}
+          />
+        </div>
+
+        {dateFilter && (
+          <p className="text-xs" style={{ color: "var(--text-secondary)" }}>
+            {dateFilter.from === dateFilter.to
+              ? t("dateShowing", { date: formatDate(dateFilter.from) })
+              : t("dateShowingRange", {
+                  from: formatDate(dateFilter.from),
+                  to: formatDate(dateFilter.to),
+                })}
+          </p>
+        )}
 
         {/* Sort options */}
         <div className="flex flex-wrap items-center gap-2">

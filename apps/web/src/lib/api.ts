@@ -110,17 +110,32 @@ async function fetchApi<T>(
   return schema.parse(data);
 }
 
-export async function getArticles(params?: {
+export interface ArticlesQuery {
   skip?: number;
   limit?: number;
   min_score?: number;
   source_type?: string;
-}): Promise<z.infer<typeof articlesResponseSchema>> {
+  /** Inclusive local calendar date, YYYY-MM-DD */
+  date_from?: string;
+  /** Inclusive local calendar date, YYYY-MM-DD */
+  date_to?: string;
+  /** Viewer's UTC offset in minutes (e.g. 180 for Riyadh) */
+  tz_offset?: number;
+  sort?: "score" | "date";
+}
+
+export async function getArticles(
+  params?: ArticlesQuery,
+): Promise<z.infer<typeof articlesResponseSchema>> {
   const searchParams = new URLSearchParams();
   if (params?.skip) searchParams.set("skip", String(params.skip));
   if (params?.limit) searchParams.set("limit", String(params.limit));
   if (params?.min_score) searchParams.set("min_score", String(params.min_score));
   if (params?.source_type) searchParams.set("source_type", params.source_type);
+  if (params?.date_from) searchParams.set("date_from", params.date_from);
+  if (params?.date_to) searchParams.set("date_to", params.date_to);
+  if (params?.tz_offset) searchParams.set("tz_offset", String(params.tz_offset));
+  if (params?.sort) searchParams.set("sort", params.sort);
 
   const query = searchParams.toString();
   return fetchApi(`/articles${query ? `?${query}` : ""}`, articlesResponseSchema);
