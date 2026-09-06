@@ -68,7 +68,7 @@ Tu tournes dans l'environnement cloud « Par défaut » de Claude Code (pas Cowo
 ## Objectif du run
 1. Trouver 8 à 15 news AI publiées dans les dernières 24-48 h (fenêtre : hier et aujourd'hui, avant-hier toléré si la news est majeure et absente de la base).
 2. Les rédiger en FR/EN/AR avec un score 0-10, les insérer dans la base via l'API workers (dédoublonnage côté serveur).
-3. Envoyer un mail HTML récapitulatif via Gmail à it@contentco.sa.
+3. Envoyer un mail HTML récapitulatif via Gmail à it@contentco.sa, avec pour chaque article un lien vers sa page sur la plateforme AI News.
 
 ## Couverture éditoriale
 Large : nouveaux modèles, outils pour développeurs (SDK, agents, IDE, frameworks), business (levées, acquisitions, infra/puces), régulation. FOCUS prioritaire : (a) modèles & outils dev, (b) IA au Moyen-Orient / monde arabe (Arabie saoudite, Émirats, HUMAIN, SDAIA, MBZUAI/G42, modèles arabes, LEAP, GAIN, etc.). Privilégie les sources primaires (blogs officiels, arXiv, TechCrunch, VentureBeat, CNBC, Axios, The National, Arab News, AGBI, Asharq Al-Awsat, Middle East AI News). Évite les contenus YouTube et les agrégateurs sans source. Vise 3-5 sujets Moyen-Orient/arabe quand l'actualité le permet.
@@ -81,8 +81,8 @@ Avant de rédiger : `curl -sS "https://zestful-wonder-production-58cb.up.railway
 ## API workers (Railway)
 - Base : https://zestful-wonder-production-58cb.up.railway.app
 - Santé : GET /health
-- Liste : GET /articles?limit=100
-- Insertion : POST /articles/ingest, header `X-Ingest-Token: <INGEST_TOKEN>`, body JSON `{"articles":[...]}` (1 à 100 éléments). Le serveur dédoublonne par sha256(titre|url) et renvoie {inserted, skipped, inserted_count, skipped_count}.
+- Liste : GET /articles?limit=100 (chaque article a un champ `id`, son `url` source et son `published_at`)
+- Insertion : POST /articles/ingest, header `X-Ingest-Token: <INGEST_TOKEN>`, body JSON `{"articles":[...]}` (1 à 100 éléments). Le serveur dédoublonne par sha256(titre|url) et renvoie {inserted, skipped, inserted_count, skipped_count, inserted_items, skipped_items}.
 - Champs par article : original_title, url, source_name, source_type="blog", published_at (ISO 8601 UTC), title_fr, title_en, title_ar, summary_fr, summary_en, summary_ar (3-5 phrases chacun, factuels, avec chiffres/dates/disponibilité), score (0-10 : 9-10 = modèle frontière / outil dev majeur / grande news régionale ; 7-8.5 = important ; 5-6.5 = utile), thumbnail_url optionnel.
 - Exemple : `curl -sS -X POST "https://zestful-wonder-production-58cb.up.railway.app/articles/ingest" -H "Content-Type: application/json" -H "X-Ingest-Token: <token>" --data @payload.json`
 
@@ -93,7 +93,7 @@ Chaque article inséré ou déjà en base a une page sur la plateforme : https:/
 
 ## Mail récapitulatif (Gmail → it@contentco.sa)
 Sujet : « Veille AI — <date du jour JJ/MM/AAAA> — N articles (X insérés, Y doublons) ».
-Corps HTML (htmlBody) auto-suffisant, styles inline, largeur max 680px : bandeau titre sombre avec la date et les compteurs ; puis une carte par article triée par score décroissant avec : source · date · badge score, titre FR cliquable (lien vers la page de l'article sur la plateforme AI News ; à défaut vers la source), résumé FR, ligne « EN — titre EN », ligne « AR — titre AR » en dir="rtl", puis deux liens : « Voir sur AI News → » (page plateforme) et « Lire la source → » (URL d'origine). Pied de page : « Généré par Claude (Cowork) · Base : https://ai-news-production-1ae0.up.railway.app ». Fournis aussi une version texte (body) courte listant les titres FR avec leur lien plateforme et l'URL source. Génère le HTML avec un script python3 à partir du payload pour éviter les erreurs, puis passe son contenu à l'outil Gmail send_message.
+Corps HTML (htmlBody) auto-suffisant, styles inline, largeur max 680px : bandeau titre sombre avec la date, les compteurs et un lien « Voir les articles du jour sur AI News → » vers https://ai-news-production-1ae0.up.railway.app/fr/articles?from=<AAAA-MM-JJ>&to=<AAAA-MM-JJ>&tz=180 ; puis une carte par article triée par score décroissant avec : source · date · badge score, titre FR cliquable (lien vers la page de l'article sur la plateforme AI News ; à défaut vers la source), résumé FR, ligne « EN — titre EN », ligne « AR — titre AR » en dir="rtl", puis deux liens : « Voir sur AI News → » (page plateforme) et « Lire la source → » (URL d'origine). Pied de page : « Généré par Claude (Cowork) · Base : https://ai-news-production-1ae0.up.railway.app ». Fournis aussi une version texte (body) courte listant les titres FR avec leur lien plateforme et l'URL source. Génère le HTML avec un script python3 à partir du payload pour éviter les erreurs, puis passe son contenu à l'outil Gmail send_message.
 Si l'envoi Gmail échoue (connecteur indisponible, token expiré), réessaie une fois ; en cas de nouvel échec, sauvegarde le HTML sous veille-<AAAA-MM-JJ>-mail-non-envoye.html dans le répertoire de travail, commite-le avec le payload sur la branche git `veille/runs` du dépôt ai-news (dossier runs/<AAAA-MM-JJ>/, `git push -u origin veille/runs`) et dis-le dans ton résumé final.
 
 ## Fin du run
