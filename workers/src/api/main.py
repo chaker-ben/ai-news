@@ -345,31 +345,38 @@ async def send_veille_recap(payload: VeilleRequest, db: DbSession):
     if not settings.resend_api_key and not payload.dry_run:
         raise HTTPException(status_code=503, detail="RESEND_API_KEY not configured")
 
-    articles = (
-        db.query(Article)
-        .options(joinedload(Article.source))
-        .filter(Article.id.in_(payload.article_ids))
-        .all()
-    )
-    if not articles:
-        raise HTTPException(status_code=404, detail="None of the article_ids exist")
+    try:
+        articles = (
+            db.query(Article)
+            .options(joinedload(Article.source))
+            .filter(Article.id.in_(payload.article_ids))
+            .all()
+        )
+        if not articles:
+            raise HTTPException(status_code=404, detail="None of the article_ids exist")
 
-    recipients = merge_recipients(
-        platform_recipients(db),
-        [Recipient(email=r.email, language=r.language) for r in payload.extra_recipients],
-    )
-    if not recipients:
-        return {"status": "no_recipients", "articles": len(articles), "recipients": 0}
+        recipients = merge_recipients(
+            platform_recipients(db),
+            [Recipient(email=r.email, language=r.language) for r in payload.extra_recipients],
+        )
+        if not recipients:
+            return {"status": "no_recipients", "articles": len(articles), "recipients": 0}
 
-    result = await send_veille(
-        db,
-        articles,
-        recipients,
-        payload.day or datetime.now(timezone.utc).date(),
-        payload.inserted_count,
-        payload.skipped_count,
-        dry_run=payload.dry_run,
-    )
+        result = await send_veille(
+            db,
+            articles,
+            recipients,
+            payload.day or datetime.now(timezone.utc).date(),
+            payload.inserted_count,
+            payload.skipped_count,
+            dry_run=payload.dry_run,
+        )
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        db.rollback()
+        logger.exception("Veille recap failed")
+        raise HTTPException(status_code=500, detail=f"Veille recap failed: {exc}") from exc
     result["missing_article_ids"] = sorted(set(payload.article_ids) - {a.id for a in articles})
     return result
 
