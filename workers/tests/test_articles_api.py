@@ -67,3 +67,33 @@ def test_list_articles_filters_by_local_day_and_sorts_by_date(db):
 
     week = list_articles(db, date_from=date(2026, 9, 6) - timedelta(days=6), date_to=date(2026, 9, 6))
     assert week["total"] == 3
+
+
+@pytest.mark.asyncio
+async def test_notify_email_requires_resend_and_relays(monkeypatch):
+    from fastapi import HTTPException
+
+    from workers.src.api import main as api_main
+    from workers.src.config import settings
+
+    payload = api_main.EmailRequest(to="it@example.com", subject="Veille", html="<p>ok</p>")
+
+    monkeypatch.setattr(settings, "resend_api_key", "")
+    with pytest.raises(HTTPException) as exc:
+        await api_main.send_transactional_email(payload)
+    assert exc.value.status_code == 503
+
+    calls = []
+
+    async def fake_send(to, subject, html):
+        calls.append((to, subject, html))
+        return True
+
+    monkeypatch.setattr(settings, "resend_api_key", "re_test")
+    monkeypatch.setattr(api_main, "send_email", fake_send)
+    result = await api_main.send_transactional_email(payload)
+    assert result == {"status": "sent", "to": "it@example.com"}
+    assert calls == [("it@example.com", "Veille", "<p>ok</p>")]
+
+    with pytest.raises(Exception):
+        api_main.EmailRequest(to="not-an-email", subject="x", html="y")

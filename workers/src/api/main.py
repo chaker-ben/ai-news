@@ -5,9 +5,11 @@ from datetime import date, datetime, time, timedelta, timezone
 from typing import Annotated, Literal, Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from fastapi import Depends, FastAPI, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
+from workers.src.api.ingest import require_ingest_token
 from workers.src.api.ingest import router as ingest_router
 from workers.src.collectors.rss_collector import seed_default_sources
 from workers.src.config import settings
@@ -21,6 +23,7 @@ from workers.src.models.article import (
     create_tables,
     get_db,
 )
+from workers.src.notifiers.email import send_email
 from workers.src.notifiers.whatsapp import send_digest, send_digest_to_user
 from workers.src.processors.pipeline import process_unprocessed_articles
 from workers.src.scheduler.jobs import (
@@ -283,6 +286,29 @@ async def reprocess_all_articles(db: DbSession):
 
     processed = await process_unprocessed_articles(db)
     return {"status": "ok", "reprocessed": len(processed)}
+
+
+class EmailRequest(BaseModel):
+    """Transactional email relayed through Resend (used by the daily veille agent)."""
+
+    to: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=320)
+    subject: str = Field(min_length=1, max_length=300)
+    html: str = Field(min_length=1, max_length=500_000)
+
+
+@app.post("/notify/email", dependencies=[Depends(require_ingest_token)])
+async def send_transactional_email(payload: EmailRequest):
+    """Send one HTML email via Resend (authenticated with X-Ingest-Token).
+
+    Lets automation that has no mail connector (e.g. a Claude Routine in a cloud
+    environment) deliver the daily recap. Returns 503 when Resend is not configured.
+    """
+    if not settings.resend_api_key:
+        raise HTTPException(status_code=503, detail="RESEND_API_KEY not configured")
+    sent = await send_email(payload.to, payload.subject, payload.html)
+    if not sent:
+        raise HTTPException(status_code=502, detail="Resend rejected the email (see server logs)")
+    return {"status": "sent", "to": payload.to}
 
 
 @app.post("/notify/digest")
