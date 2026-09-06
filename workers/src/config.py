@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     resend_api_key: str = ""
     email_from: str = "AI News <notifications@ainews.app>"
 
+    # Public web app, used for links in emails
+    web_base_url: str = "https://ai-news-production-1ae0.up.railway.app"
+
     # Telegram
     telegram_bot_token: str = ""
 
