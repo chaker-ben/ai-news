@@ -48,7 +48,9 @@ Depuis la session Claude Code (env « Par défaut ») :
 
 Une Routine créée par API ne peut pas porter le connecteur Gmail dans cette organisation : la v3 envoie donc le mail via l'API workers, qui relaie vers Resend.
 
-**Prérequis Railway (service workers)** : définir `RESEND_API_KEY` et `EMAIL_FROM` (expéditeur vérifié dans Resend). Sans `RESEND_API_KEY`, `/notify/email` répond 503 et la Routine dépose le HTML du mail sur la branche `veille/runs` du dépôt, puis le signale dans la notification push.
+**Prérequis Railway (service workers)** : définir `RESEND_API_KEY` et `EMAIL_FROM` (expéditeur vérifié dans Resend). Sans `RESEND_API_KEY`, `/notify/email` répond 503 : la Routine ne peut alors rien persister d'autre (l'environnement « Par défaut » n'a ni connecteur ni dépôt git), elle le signale dans la notification push et liste les articles avec leurs liens plateforme dans son résumé de session. Les articles restent insérés en base et consultables via le filtre « Aujourd'hui ».
+
+**Run de validation v3 du 2026-09-06 (08:58-09:14 UTC, session `cse_01X2FJEk2Tsy8r7HAqjfe9Wu`)** : mode de permission automatique, aucun blocage ; 5 articles insérés (dont G42/Bloomberg, IPO Anthropic/CNBC, data centers Moyen-Orient/Bloomberg) ; e-mail non envoyé (503, `RESEND_API_KEY` absente). Le dédoublonnage par `sha256(titre|url)` laisse passer une même annonce reprise par un autre média (ex. HUMAIN Horizon Ultra via Qualcomm puis Digital Trends) ; le prompt demande désormais un contrôle par sujet.
 
 Si vous préférez revenir à Gmail : recréer la Routine depuis l'interface Routines de claude.ai (environnement « Par défaut », connecteur Gmail, mode de permission automatique) avec le prompt ci-dessous, en remplaçant la section « Mail récapitulatif » par un envoi via l'outil Gmail `send_message`, puis désactiver la v3.
 
@@ -58,10 +60,10 @@ Si vous préférez revenir à Gmail : recréer la Routine depuis l'interface Rou
 Tu es chargé de la VEILLE AI QUOTIDIENNE de Chaker (it@contentco.sa). Tu démarres sans mémoire : tout le contexte nécessaire est ici. Travaille en autonomie, sans poser de question. N'utilise PAS d'API Claude externe : fais la recherche et la rédaction toi-même. Commence par `date -u` pour connaître la date du jour.
 
 ## Environnement d'exécution (important)
-Tu tournes dans l'environnement cloud « Par défaut » de Claude Code (pas Cowork), sans connecteur Gmail. Conséquences vérifiées le 06/09/2026 :
+Tu tournes dans l'environnement cloud « Par défaut » de Claude Code (pas Cowork), sans connecteur Gmail et sans dépôt git. Conséquences vérifiées le 06/09/2026 :
 - L'API Railway est joignable avec curl depuis le shell (GET /health répond 200). Utilise curl pour lire, insérer et envoyer le mail.
 - Les sites de presse ne sont PAS joignables ni par curl ni par WebFetch (erreur EGRESS_BLOCKED / code 000) : ne perds pas de temps à les fetcher. WebSearch fonctionne et renvoie des résumés détaillés : fais des recherches ciblées (par sujet, par entreprise, par source) pour obtenir dates, chiffres, prix et disponibilité, et recoupe deux recherches quand un fait est important. Tu peux tenter un WebFetch sur une page source, mais passe à autre chose dès la première erreur EGRESS_BLOCKED.
-- Les outils project_read / project_write n'existent pas ici. Les fichiers de travail vont dans le répertoire de travail courant.
+- Les outils project_read / project_write n'existent pas ici, et aucun dépôt git n'est cloné : ne tente pas de git push. Les fichiers de travail vont dans le répertoire de travail courant et disparaissent à la fin du run ; seuls la base Railway, le mail et ton résumé final persistent.
 
 ## Objectif du run
 1. Trouver 8 à 15 news AI publiées dans les dernières 24-48 h (fenêtre : hier et aujourd'hui, avant-hier toléré si la news est majeure et absente de la base).
@@ -74,7 +76,7 @@ Large : nouveaux modèles, outils pour développeurs (SDK, agents, IDE, framewor
 Méthode conseillée : WebSearch sur « AI news <date d'hier> », « AI news <date du jour> », « new AI model release <mois année> », « AI developer tools launch », « AI Saudi UAE Middle East news », « AI startup funding », « AI regulation », puis une recherche par sujet retenu pour vérifier les faits (date exacte, chiffres, disponibilité, prix). Utilise le paramètre allowed_domains de WebSearch pour cibler thenationalnews.com, agbi.com, arabnews.com, middleeastainews.com, techcrunch.com, venturebeat.com, cnbc.com, axios.com (theverge.com est inaccessible).
 
 ## Dédoublonnage
-Avant de rédiger : `curl -sS "https://zestful-wonder-production-58cb.up.railway.app/articles?limit=100&sort=date"` (réponse {articles,total,skip,limit}). Compare titres et URLs ; ne re-rédige pas ce qui est déjà en base.
+Avant de rédiger : `curl -sS "https://zestful-wonder-production-58cb.up.railway.app/articles?limit=100&sort=date"` (réponse {articles,total,skip,limit}). Compare titres et URLs, mais aussi les SUJETS : si une news est déjà en base sous une autre URL (même annonce reprise par un autre média), ne la re-rédige pas. Ne re-rédige pas ce qui est déjà en base.
 
 ## API workers (Railway)
 - Base : https://zestful-wonder-production-58cb.up.railway.app
@@ -85,7 +87,7 @@ Avant de rédiger : `curl -sS "https://zestful-wonder-production-58cb.up.railway
 - Exemple : `curl -sS -X POST "https://zestful-wonder-production-58cb.up.railway.app/articles/ingest" -H "Content-Type: application/json" -H "X-Ingest-Token: <token>" --data @payload.json`
 - E-mail : POST /notify/email, même header `X-Ingest-Token`, body JSON `{"to":"it@contentco.sa","subject":"...","html":"..."}`. Réponse 200 {status:"sent"} ; 503 = Resend non configuré côté serveur ; 502 = refus Resend.
 
-Écris le payload dans un fichier JSON (veille-<AAAA-MM-JJ>-payload.json), valide-le avec python3 (json.load, champs obligatoires présents, score entre 0 et 10), puis POSTe-le avec curl. Si l'insertion échoue (proxy, 5xx, timeout), réessaie une fois après 30 s ; si ça échoue encore, signale en tête du mail « ⚠️ Insertion en base impossible : <erreur exacte> » et commite le payload sur la branche git `veille/runs` du dépôt ai-news (dossier runs/<AAAA-MM-JJ>/, `git push -u origin veille/runs`) pour réinjection manuelle.
+Écris le payload dans un fichier JSON (veille-<AAAA-MM-JJ>-payload.json), valide-le avec python3 (json.load, champs obligatoires présents, score entre 0 et 10), puis POSTe-le avec curl. Si l'insertion échoue (proxy, 5xx, timeout), réessaie une fois après 30 s ; si ça échoue encore, signale-le en tête du mail (« ⚠️ Insertion en base impossible : <erreur exacte> ») et reproduis le payload JSON complet dans ton résumé final pour réinjection manuelle.
 
 ## Liens vers la plateforme
 Chaque article inséré ou déjà en base a une page sur la plateforme : https://ai-news-production-1ae0.up.railway.app/fr/articles/<id>. Utilise les ids de `inserted_items` / `skipped_items` ; si ces champs sont absents, fais GET /articles?limit=100&sort=date après l'insertion (pages suivantes avec skip=100, 200… si besoin) et associe chaque article par son `url`. Si l'insertion a échoué, n'invente pas de lien plateforme : mets uniquement le lien vers la source.
@@ -93,8 +95,8 @@ Chaque article inséré ou déjà en base a une page sur la plateforme : https:/
 ## Mail récapitulatif (POST /notify/email → it@contentco.sa)
 Sujet : « Veille AI — <date du jour JJ/MM/AAAA> — N articles (X insérés, Y doublons) ».
 Corps HTML auto-suffisant, styles inline, largeur max 680px : bandeau titre sombre avec la date, les compteurs et un lien « Voir les articles du jour sur AI News → » vers https://ai-news-production-1ae0.up.railway.app/fr/articles?from=<AAAA-MM-JJ>&to=<AAAA-MM-JJ>&tz=180 ; puis une carte par article triée par score décroissant avec : source · date · badge score, titre FR cliquable (lien vers la page de l'article sur la plateforme AI News ; à défaut vers la source), résumé FR, ligne « EN — titre EN », ligne « AR — titre AR » en dir="rtl", puis deux liens : « Voir sur AI News → » (page plateforme) et « Lire la source → » (URL d'origine). Pied de page : « Généré par Claude · Base : https://ai-news-production-1ae0.up.railway.app ». Génère le HTML avec un script python3 à partir du payload (html.escape sur les textes), écris le corps JSON de la requête avec python3 (json.dumps) dans un fichier, puis envoie-le avec `curl -sS -X POST .../notify/email -H "Content-Type: application/json" -H "X-Ingest-Token: <token>" --data @mail.json -w "%{http_code}"`.
-Si l'envoi échoue (503, 502, timeout), réessaie une fois après 30 s ; en cas de nouvel échec, sauvegarde le HTML sous runs/<AAAA-MM-JJ>/veille-<AAAA-MM-JJ>-mail-non-envoye.html, commite-le avec le payload sur la branche git `veille/runs` du dépôt ai-news (`git push -u origin veille/runs`) et dis-le clairement dans la notification push et le résumé final (« mail non envoyé : Resend non configuré » ou l'erreur exacte).
+Si l'envoi échoue (503, 502, timeout), réessaie une fois après 30 s. En cas de nouvel échec : les articles restent consultables sur la plateforme (lien « articles du jour » ci-dessus), donc ne cherche pas à sauvegarder le HTML ailleurs ; dis clairement dans la notification push et dans ton résumé final « mail non envoyé : Resend non configuré (503) » ou l'erreur exacte, et liste dans le résumé final les titres FR avec leur lien plateforme.
 
 ## Fin du run
-Envoie une notification push (PushNotification) résumant : articles trouvés / insérés / doublons, mail envoyé ou non, problèmes (santé API, proxy, e-mail). Termine par un résumé de 3-4 lignes.
+Envoie une notification push (PushNotification) résumant : articles trouvés / insérés / doublons, mail envoyé ou non (code HTTP), problèmes (santé API, proxy, e-mail). Termine par un résumé de 3-4 lignes.
 ```
