@@ -32,6 +32,16 @@ Le run planifié de 07:57 UTC a échoué sur deux étapes : insertion en base (R
 - `GET /articles` accepte `date_from`, `date_to` (dates locales inclusives `YYYY-MM-DD`), `tz_offset` (décalage UTC du lecteur en minutes, 180 pour Riyad) et `sort=score|date`.
 - Page `/articles` de l'app web : filtre par jour (Aujourd'hui, Hier, 7 derniers jours, date libre) porté par l'URL (`?from=&to=&tz=`), résolu côté serveur pour renvoyer toute la journée. Exemple : `/fr/articles?from=2026-09-06&to=2026-09-06&tz=180`.
 
+## Mail par utilisateur, dans sa langue (`POST /notify/veille`)
+
+Depuis le 06/09, le mail récapitulatif n'est plus composé par la Routine : elle appelle `POST /notify/veille` (header `X-Ingest-Token`) avec les ids des articles du jour, et le serveur envoie **un mail par destinataire dans sa langue** (`user_preferences.language` : fr / en / ar, arabe en RTL), avec liens `/<langue>/articles/<id>` vers la plateforme.
+
+- Destinataires : utilisateurs avec `email_notifications` actif (abonnement absent, `active` ou `trialing`), plus `extra_recipients` optionnels (ex. `it@contentco.sa`, non dédoublonnés seulement s'ils ne sont pas déjà utilisateurs).
+- Corps : `{"article_ids": [...], "inserted_count": n, "skipped_count": n, "day": "AAAA-MM-JJ", "extra_recipients": [{"email": "...", "language": "fr"}], "dry_run": false}`. `dry_run: true` renvoie la répartition par langue sans envoyer.
+- Réponse : `{status, articles, recipients, by_language, sent, failed, missing_article_ids}`. Journalisé dans `notification_logs` (type `email_veille`) et `user_notification_status` (canal `email`).
+- Réglage : `WEB_BASE_URL` (défaut `https://ai-news-production-1ae0.up.railway.app`), `RESEND_API_KEY`, `EMAIL_FROM` sur le service workers.
+- `POST /notify/email` (HTML libre, un seul destinataire) reste disponible pour des envois ponctuels.
+
 ## Rattrapage effectué le 2026-09-06
 
 Depuis la session Claude Code (env « Par défaut ») :

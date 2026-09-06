@@ -7,7 +7,7 @@ from typing import Annotated, Literal, Optional
 from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI, HTTPException, Query
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from workers.src.api.ingest import require_ingest_token
 from workers.src.api.ingest import router as ingest_router
@@ -24,6 +24,12 @@ from workers.src.models.article import (
     get_db,
 )
 from workers.src.notifiers.email import send_email
+from workers.src.notifiers.veille import (
+    Recipient,
+    merge_recipients,
+    platform_recipients,
+    send_veille,
+)
 from workers.src.notifiers.whatsapp import send_digest, send_digest_to_user
 from workers.src.processors.pipeline import process_unprocessed_articles
 from workers.src.scheduler.jobs import (
@@ -309,6 +315,63 @@ async def send_transactional_email(payload: EmailRequest):
     if not sent:
         raise HTTPException(status_code=502, detail="Resend rejected the email (see server logs)")
     return {"status": "sent", "to": payload.to}
+
+
+class VeilleRecipient(BaseModel):
+    email: str = Field(pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", max_length=320)
+    language: Literal["fr", "en", "ar"] = "fr"
+
+
+class VeilleRequest(BaseModel):
+    """Daily recap request sent by the veille agent after ingestion."""
+
+    article_ids: list[str] = Field(min_length=1, max_length=200)
+    inserted_count: int = Field(default=0, ge=0)
+    skipped_count: int = Field(default=0, ge=0)
+    day: Optional[date] = None
+    extra_recipients: list[VeilleRecipient] = Field(default_factory=list)
+    dry_run: bool = False
+
+
+@app.post("/notify/veille", dependencies=[Depends(require_ingest_token)])
+async def send_veille_recap(payload: VeilleRequest, db: DbSession):
+    """Send the daily recap to every opted-in user in their own language (FR/EN/AR).
+
+    Recipients are the platform users with email notifications enabled (language from
+    their preferences), plus optional extra recipients. Each recipient gets one email
+    rendered in their language with platform links. Use ``dry_run`` to preview the
+    recipient breakdown without sending.
+    """
+    if not settings.resend_api_key and not payload.dry_run:
+        raise HTTPException(status_code=503, detail="RESEND_API_KEY not configured")
+
+    articles = (
+        db.query(Article)
+        .options(joinedload(Article.source))
+        .filter(Article.id.in_(payload.article_ids))
+        .all()
+    )
+    if not articles:
+        raise HTTPException(status_code=404, detail="None of the article_ids exist")
+
+    recipients = merge_recipients(
+        platform_recipients(db),
+        [Recipient(email=r.email, language=r.language) for r in payload.extra_recipients],
+    )
+    if not recipients:
+        return {"status": "no_recipients", "articles": len(articles), "recipients": 0}
+
+    result = await send_veille(
+        db,
+        articles,
+        recipients,
+        payload.day or datetime.now(timezone.utc).date(),
+        payload.inserted_count,
+        payload.skipped_count,
+        dry_run=payload.dry_run,
+    )
+    result["missing_article_ids"] = sorted(set(payload.article_ids) - {a.id for a in articles})
+    return result
 
 
 @app.post("/notify/digest")
