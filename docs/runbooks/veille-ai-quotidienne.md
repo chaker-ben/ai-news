@@ -9,7 +9,7 @@ Chaque jour à 06:00 UTC (09:00 Riyad), une session Claude fraîche :
 1. cherche 8 à 15 news IA des dernières 24-48 h (focus modèles/outils dev et Moyen-Orient) ;
 2. les rédige en FR/EN/AR avec un score 0-10 ;
 3. les insère via `POST /articles/ingest` de l'API workers (Railway), dédoublonnage serveur par `sha256(titre|url)` ;
-4. envoie un mail HTML récapitulatif à `it@contentco.sa` via le connecteur Gmail ;
+4. déclenche `POST /notify/veille` : un mail récapitulatif par utilisateur de la plateforme, dans sa langue (FR/EN/AR), plus `it@contentco.sa` ;
 5. envoie une notification push et un résumé.
 
 Le token d'ingestion est la variable `INGEST_TOKEN` du service workers sur Railway. Il ne doit jamais être commité dans ce dépôt.
@@ -54,7 +54,7 @@ Depuis la session Claude Code (env « Par défaut ») :
 | Routine | État | Environnement | E-mail |
 | --- | --- | --- | --- |
 | v2 `trig_01AvAfeprKWhG2PKNXU4eu5Z` | **désactivée** (Railway bloqué par le réseau Cowork) | Cowork distant | connecteur Gmail |
-| v3 `trig_01YS2tzTz3JiwjKJFNZrLLjH` | **active**, cron `0 6 * * *` UTC | « Par défaut » (`env_0176qVoN3LrMobzbuNXMkDvt`) | `POST /notify/email` (Resend, côté workers) |
+| v3 `trig_01YS2tzTz3JiwjKJFNZrLLjH` | **active**, cron `0 6 * * *` UTC | « Par défaut » (`env_0176qVoN3LrMobzbuNXMkDvt`) | `POST /notify/veille` (un mail par utilisateur dans sa langue, Resend côté workers) |
 
 Une Routine créée par API ne peut pas porter le connecteur Gmail dans cette organisation : la v3 envoie donc le mail via l'API workers, qui relaie vers Resend.
 
@@ -64,7 +64,7 @@ Une Routine créée par API ne peut pas porter le connecteur Gmail dans cette or
 
 Si vous préférez revenir à Gmail : recréer la Routine depuis l'interface Routines de claude.ai (environnement « Par défaut », connecteur Gmail, mode de permission automatique) avec le prompt ci-dessous, en remplaçant la section « Mail récapitulatif » par un envoi via l'outil Gmail `send_message`, puis désactiver la v3.
 
-## Prompt v3 (Routine active, environnement « Par défaut », e-mail via /notify/email)
+## Prompt v3 (Routine active, environnement « Par défaut », e-mail via /notify/veille)
 
 ```text
 Tu es chargé de la VEILLE AI QUOTIDIENNE de Chaker (it@contentco.sa). Tu démarres sans mémoire : tout le contexte nécessaire est ici. Travaille en autonomie, sans poser de question. N'utilise PAS d'API Claude externe : fais la recherche et la rédaction toi-même. Commence par `date -u` pour connaître la date du jour.
