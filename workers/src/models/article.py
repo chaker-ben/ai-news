@@ -243,7 +243,7 @@ class Subscription(Base):
     billing_plan_id = Column(String, nullable=False)
     plan = Column(String, nullable=False)  # free, pro, team, enterprise
     status = Column(String, default="inactive")  # active, inactive, trialing, cancelled, expired
-    billing_cycle = Column(String, default="monthly")
+    billing_cycle = Column("billingCycle", String, default="monthly")  # Prisma column has no @map
     amount = Column(Float, default=0)
     currency = Column(String, default="USD")
     payment_status = Column(String, default="unpaid")
